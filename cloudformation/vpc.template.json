@@ -37,7 +37,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "Tokyo",
         "NumAZs": "2"
       },
@@ -45,7 +44,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "Seoul",
         "NumAZs": "2"
       },
@@ -53,7 +51,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "Mumbai",
         "NumAZs": "2"
       },
@@ -61,7 +58,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "Singapore",
         "NumAZs": "2"
       },
@@ -69,7 +65,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "2",
-        "EFSSupport": "no",
         "Name": "Sydney",
         "NumAZs": "3"
       },
@@ -77,7 +72,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "Central",
         "NumAZs": "2"
       },
@@ -85,7 +79,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "Frankfurt",
         "NumAZs": "2"
       },
@@ -93,7 +86,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "2",
-        "EFSSupport": "no",
         "Name": "Ireland",
         "NumAZs": "3"
       },
@@ -101,7 +93,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "London",
         "NumAZs": "2"
       },
@@ -109,7 +100,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "2",
-        "EFSSupport": "no",
         "Name": "Sao Paulo",
         "NumAZs": "3"
       },
@@ -117,7 +107,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "2",
-        "EFSSupport": "no",
         "Name": "N. Virgina",
         "NumAZs": "4"
       },
@@ -125,7 +114,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "2",
-        "EFSSupport": "no",
         "Name": "Ohio",
         "NumAZs": "3"
       },
@@ -133,7 +121,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "0",
-        "EFSSupport": "no",
         "Name": "N. California",
         "NumAZs": "2"
       },
@@ -141,7 +128,6 @@
         "AZ0": "0",
         "AZ1": "1",
         "AZ2": "2",
-        "EFSSupport": "no",
         "Name": "Oregon",
         "NumAZs": "3"
       }
