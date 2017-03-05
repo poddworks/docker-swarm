@@ -1,0 +1,72 @@
+---
+provision:
+- name: Install utility package
+  action:
+    - script: 00-install-pkg
+      sudo: true
+
+- name: Configure Docker Volume
+  action:
+    - cmd: 'pvcreate /dev/xvdb'
+      shell: true
+      sudo: true
+    - cmd: 'vgcreate data /dev/xvdb'
+      shell: true
+      sudo: true
+    - cmd: 'lvcreate -l 100%FREE -n docker data'
+      shell: true
+      sudo: true
+    - cmd: 'mkfs.ext4 /dev/data/docker'
+      sudo: true
+    - cmd: 'echo "/dev/mapper/data-docker /data ext4 rw 0 0" >>/etc/fstab'
+      shell: true
+      sudo: true
+
+- name: Install Docker Engine
+  action:
+    - script: 01-install-docker-engine
+      sudo: true
+
+- name: Configure Docker Engine
+  archive:
+    - src: ../../docker.daemon.json
+      dst: /etc/docker/daemon.json
+      sudo: true
+  action:
+    - script: 02-configure-docker-engine
+      sudo: true
+    - cmd: 'rm -f /etc/docker/key.json'
+      sudo: true
+    - cmd: 'rm -rf /var/lib/docker'
+      sudo: true
+
+- name: Configure Instance Stats Reporting to CloudWatch
+  action:
+    - script: 03-configure-cloudwatch-instance-metric
+      sudo: true
+    - cmd: 'rm -f /var/tmp/aws-mon/instance-id'
+      sudo: true
+
+---
+provision:
+- name: Configure System Swap
+  action:
+    - cmd: 'fallocate -l 8G /swapfile'
+      shell: true
+      sudo: true
+    - cmd: 'chmod 600 /swapfile'
+      shell: true
+      sudo: true
+    - cmd: 'mkswap /swapfile'
+      shell: true
+      sudo: true
+    - cmd: 'echo "/swapfile none swap sw 0 0" >>/etc/fstab'
+      shell: true
+      sudo: true
+
+---
+provision:
+- name: Clean up and Shutdown
+  action:
+    - cmd: shutdown -h now
+      sudo: true

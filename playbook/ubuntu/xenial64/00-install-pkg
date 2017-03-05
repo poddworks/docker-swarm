@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+# install common utility packages
+apt-get update
+apt-get install -y htop lvm2 ntp jq
