@@ -1,0 +1,734 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Vpc for Docker Swarm Cluster",
+  "Conditions": {
+    "HasOnly2AZs": {
+      "Fn::Equals": [
+        {
+          "Fn::FindInMap": [
+            "AWSRegion2AZ",
+            {
+              "Ref": "AWS::Region"
+            },
+            "NumAZs"
+          ]
+        },
+        "2"
+      ]
+    }
+  },
+  "Mappings": {
+    "VpcCidrs": {
+      "pubsubnet1": {
+        "cidr": "172.31.0.0/20"
+      },
+      "pubsubnet2": {
+        "cidr": "172.31.16.0/20"
+      },
+      "pubsubnet3": {
+        "cidr": "172.31.32.0/20"
+      },
+      "vpc": {
+        "cidr": "172.31.0.0/16"
+      }
+    },
+    "AWSRegion2AZ": {
+      "ap-northeast-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "Tokyo",
+        "NumAZs": "2"
+      },
+      "ap-northeast-2": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "Seoul",
+        "NumAZs": "2"
+      },
+      "ap-south-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "Mumbai",
+        "NumAZs": "2"
+      },
+      "ap-southeast-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "Singapore",
+        "NumAZs": "2"
+      },
+      "ap-southeast-2": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "2",
+        "EFSSupport": "no",
+        "Name": "Sydney",
+        "NumAZs": "3"
+      },
+      "ca-central-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "Central",
+        "NumAZs": "2"
+      },
+      "eu-central-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "Frankfurt",
+        "NumAZs": "2"
+      },
+      "eu-west-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "2",
+        "EFSSupport": "no",
+        "Name": "Ireland",
+        "NumAZs": "3"
+      },
+      "eu-west-2": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "London",
+        "NumAZs": "2"
+      },
+      "sa-east-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "2",
+        "EFSSupport": "no",
+        "Name": "Sao Paulo",
+        "NumAZs": "3"
+      },
+      "us-east-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "2",
+        "EFSSupport": "no",
+        "Name": "N. Virgina",
+        "NumAZs": "4"
+      },
+      "us-east-2": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "2",
+        "EFSSupport": "no",
+        "Name": "Ohio",
+        "NumAZs": "3"
+      },
+      "us-west-1": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "0",
+        "EFSSupport": "no",
+        "Name": "N. California",
+        "NumAZs": "2"
+      },
+      "us-west-2": {
+        "AZ0": "0",
+        "AZ1": "1",
+        "AZ2": "2",
+        "EFSSupport": "no",
+        "Name": "Oregon",
+        "NumAZs": "3"
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Parameters": [
+            "RemoteSSH"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "RemoteSSH": {
+          "default": "Which IPs are allowed to SSH? [0.0.0.0/0 will allow SSH from anywhere]"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "RemoteSSH": {
+      "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x.",
+      "Description": "The IP address range that can SSH to the EC2 instance.",
+      "MaxLength": "18",
+      "MinLength": "9",
+      "Type": "String"
+    }
+  },
+  "Outputs": {
+    "ZoneAvailabilityComment": {
+      "Description": "Availabilty Zones Comment",
+      "Value": {
+        "Fn::If": [
+          "HasOnly2AZs",
+          "This region only has 2 Availabiliy Zones (AZ). If one of those AZs goes away, it will cause problems for your Swarm Managers. Please use a Region with at least 3 AZs.",
+          "This region has at least 3 Availability Zones (AZ). This is ideal to ensure a fully functional Swarm in case you lose an AZ."
+        ]
+      }
+    },
+    "VpcId": {
+      "Description": "Provisioned VPC ID",
+      "Value": {
+        "Ref": "Vpc"
+      }
+    },
+    "PubSubnetAz1": {
+      "Description": "Subnet in Availabil Zone 1",
+      "Value": {
+        "Fn::FindInMap": [
+          "VpcCidrs",
+          "pubsubnet1",
+          "cidr"
+        ]
+      }
+    },
+    "PubSubnetAz2": {
+      "Description": "Subnet in Availabil Zone 2",
+      "Value": {
+        "Fn::FindInMap": [
+          "VpcCidrs",
+          "pubsubnet2",
+          "cidr"
+        ]
+      }
+    },
+    "PubSubnetAz3": {
+      "Description": "Subnet in Availabil Zone 3",
+      "Value": {
+        "Fn::FindInMap": [
+          "VpcCidrs",
+          "pubsubnet3",
+          "cidr"
+        ]
+      }
+    },
+    "SwarmNode": {
+      "Description": "Security Group for Internal Access",
+      "Value": {
+        "Ref": "SwarmNode"
+      }
+    },
+    "DockerWorkerNode": {
+      "Description": "Security Group for Docker Worker Node",
+      "Value": {
+        "Ref": "DockerWorkerNode"
+      }
+    },
+    "DockerManagerNode": {
+      "Description": "Security Group for Docker Manager Node",
+      "Value": {
+        "Ref": "DockerManagerNode"
+      }
+    }
+  },
+  "Resources": {
+    "Vpc": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "VpcCidrs",
+            "vpc",
+            "cidr"
+          ]
+        },
+        "EnableDnsHostnames": "true",
+        "EnableDnsSupport": "true",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "VPC"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "IGW"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "RouteViaIgw": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "RT"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "DependsOn": [
+        "Vpc",
+        "InternetGateway"
+      ],
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PublicRouteViaIgw": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "AttachGateway",
+        "RouteViaIgw"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "RouteTableId": {
+          "Ref": "RouteViaIgw"
+        }
+      }
+    },
+    "PubSubnetAz1": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            {
+              "Fn::FindInMap": [
+                "AWSRegion2AZ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "AZ0"
+              ]
+            },
+            {
+              "Fn::GetAZs": {
+                "Ref": "AWS::Region"
+              }
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "VpcCidrs",
+            "pubsubnet1",
+            "cidr"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Subnet1"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PubSubnetAz2": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            {
+              "Fn::FindInMap": [
+                "AWSRegion2AZ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "AZ1"
+              ]
+            },
+            {
+              "Fn::GetAZs": {
+                "Ref": "AWS::Region"
+              }
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "VpcCidrs",
+            "pubsubnet2",
+            "cidr"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Subnet2"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PubSubnetAz3": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            {
+              "Fn::FindInMap": [
+                "AWSRegion2AZ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "AZ2"
+              ]
+            },
+            {
+              "Fn::GetAZs": {
+                "Ref": "AWS::Region"
+              }
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "VpcCidrs",
+            "pubsubnet3",
+            "cidr"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Subnet3"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PubSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "PubSubnetAz1",
+        "RouteViaIgw"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaIgw"
+        },
+        "SubnetId": {
+          "Ref": "PubSubnetAz1"
+        }
+      }
+    },
+    "PubSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "PubSubnetAz2",
+        "RouteViaIgw"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaIgw"
+        },
+        "SubnetId": {
+          "Ref": "PubSubnetAz2"
+        }
+      }
+    },
+    "PubSubnet3RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "PubSubnetAz3",
+        "RouteViaIgw"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaIgw"
+        },
+        "SubnetId": {
+          "Ref": "PubSubnetAz3"
+        }
+      }
+    },
+    "SwarmNode": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "GroupDescription": "Swarm wide access",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": {
+              "Fn::FindInMap": [
+                "VpcCidrs",
+                "vpc",
+                "cidr"
+              ]
+            },
+            "FromPort": "0",
+            "IpProtocol": "-1",
+            "ToPort": "65535"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Swarm"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "DockerWorkerNode": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "GroupDescription": "Docker Node SecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "8",
+            "IpProtocol": "icmp",
+            "ToPort": "0"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "0",
+            "IpProtocol": "udp",
+            "ToPort": "65535"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "0",
+            "IpProtocol": "tcp",
+            "ToPort": "65535"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": {
+              "Fn::FindInMap": [
+                "VpcCidrs",
+                "vpc",
+                "cidr"
+              ]
+            },
+            "FromPort": "0",
+            "IpProtocol": "-1",
+            "ToPort": "65535"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "DockerWorkerNode"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "DockerManagerNode": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "DockerWorkerNode",
+      "Properties": {
+        "GroupDescription": "Manager SecurityGroup",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": {
+              "Ref": "RemoteSSH"
+            },
+            "FromPort": "22",
+            "IpProtocol": "tcp",
+            "ToPort": "22"
+          },
+          {
+            "CidrIp": {
+              "Ref": "RemoteSSH"
+            },
+            "FromPort": "2376",
+            "IpProtocol": "tcp",
+            "ToPort": "2376"
+          },
+          {
+            "FromPort": "2377",
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "DockerWorkerNode",
+                "GroupId"
+              ]
+            },
+            "ToPort": "2377"
+          },
+          {
+            "FromPort": "4789",
+            "IpProtocol": "udp",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "DockerWorkerNode",
+                "GroupId"
+              ]
+            },
+            "ToPort": "4789"
+          },
+          {
+            "FromPort": "7946",
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "DockerWorkerNode",
+                "GroupId"
+              ]
+            },
+            "ToPort": "7946"
+          },
+          {
+            "FromPort": "7946",
+            "IpProtocol": "udp",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                "DockerWorkerNode",
+                "GroupId"
+              ]
+            },
+            "ToPort": "7946"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "DockerManagerNode"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
