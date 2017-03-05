@@ -1,0 +1,618 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Nodes Docker Swarm Cluster",
+  "Conditions": {
+    "EFSSupported": {
+      "Fn::Equals": [
+        {
+          "Fn::FindInMap": [
+            "AWSRegion2AZ",
+            {
+              "Ref": "AWS::Region"
+            },
+            "EFSSupport"
+          ]
+        },
+        "yes"
+      ]
+    }
+  },
+  "Mappings": {
+    "AWSRegion2AZ": {
+      "ap-northeast-1": {
+        "EFSSupport": "no",
+        "Name": "Tokyo",
+        "NumAZs": "2"
+      },
+      "ap-northeast-2": {
+        "EFSSupport": "no",
+        "Name": "Seoul",
+        "NumAZs": "2"
+      },
+      "ap-south-1": {
+        "EFSSupport": "no",
+        "Name": "Mumbai",
+        "NumAZs": "2"
+      },
+      "ap-southeast-1": {
+        "EFSSupport": "no",
+        "Name": "Singapore",
+        "NumAZs": "2"
+      },
+      "ap-southeast-2": {
+        "EFSSupport": "no",
+        "Name": "Sydney",
+        "NumAZs": "3"
+      },
+      "ca-central-1": {
+        "EFSSupport": "no",
+        "Name": "Central",
+        "NumAZs": "2"
+      },
+      "eu-central-1": {
+        "EFSSupport": "no",
+        "Name": "Frankfurt",
+        "NumAZs": "2"
+      },
+      "eu-west-1": {
+        "EFSSupport": "no",
+        "Name": "Ireland",
+        "NumAZs": "3"
+      },
+      "eu-west-2": {
+        "EFSSupport": "no",
+        "Name": "London",
+        "NumAZs": "2"
+      },
+      "sa-east-1": {
+        "EFSSupport": "no",
+        "Name": "Sao Paulo",
+        "NumAZs": "3"
+      },
+      "us-east-1": {
+        "EFSSupport": "no",
+        "Name": "N. Virgina",
+        "NumAZs": "4"
+      },
+      "us-east-2": {
+        "EFSSupport": "no",
+        "Name": "Ohio",
+        "NumAZs": "3"
+      },
+      "us-west-1": {
+        "EFSSupport": "no",
+        "Name": "N. California",
+        "NumAZs": "2"
+      },
+      "us-west-2": {
+        "EFSSupport": "no",
+        "Name": "Oregon",
+        "NumAZs": "3"
+      }
+    },
+    "AWSRegion2AMI": {
+      "ap-northeast-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "ap-northeast-2": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "ap-south-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "ap-southeast-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "ap-southeast-2": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "ca-central-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "eu-central-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "eu-west-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "eu-west-2": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "sa-east-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "us-east-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "us-east-2": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "us-west-1": {
+        "ImageId": "NOT_SUPPORTED"
+      },
+      "us-west-2": {
+        "ImageId": "NOT_SUPPORTED"
+      }
+    },
+    "DockerVersion": {
+      "version": {
+        "channel": "stable",
+        "docker": "17.03.0-ee-1"
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Instance Properties"
+          },
+          "Parameters": [
+            "ManagerInstanceType",
+            "InstanceType",
+            "KeyName"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Network Properties"
+          },
+          "Parameters": [
+            "DockerManagerNode",
+            "DockerWorkerNode",
+            "SwarmNode"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Availabilty Zone/Subnet ID"
+          },
+          "Parameters": [
+            "PubSubnetAz1",
+            "PubSubnetAz2",
+            "PubSubnetAz3"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "ManagerInstanceType": {
+          "default": "Docker Swarm Manager instance type?"
+        },
+        "InstanceType": {
+          "default": "Docker Swarm Worker instance type?"
+        },
+        "DockerManagerNode": {
+          "default": "Swarm Manager Node Security Group?"
+        },
+        "DockerWorkerNode": {
+          "default": "Swarm Worker Node Security Group?"
+        },
+        "SwarmNode": {
+          "default": "Internal Node Security Group?"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "ManagerInstanceType": {
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "t2.xlarge",
+        "t2.2xlarge"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 HVM instance type.",
+      "Default": "t2.micro",
+      "Description": "EC2 HVM instance type (t2.micro, m3.medium, etc).",
+      "Type": "String"
+    },
+    "InstanceType": {
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "t2.xlarge",
+        "t2.2xlarge"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 HVM instance type.",
+      "Default": "t2.micro",
+      "Description": "EC2 HVM instance type (t2.micro, m3.medium, etc).",
+      "Type": "String"
+    },
+    "KeyName": {
+      "ConstraintDescription": "Must be the name of an existing EC2 KeyPair",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "DockerManagerNode": {
+      "Description": "Security Group ID for the Manager Node",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "DockerWorkerNode": {
+      "Description": "Security Group ID for the Worker Node",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "SwarmNode": {
+      "Description": "Security Group ID for Internal Node",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "PubSubnetAz1": {
+      "Description": "Subnet ID for Availabilty Zone 1",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "PubSubnetAz2": {
+      "Description": "Subnet ID for Availabilty Zone 2",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "PubSubnetAz3": {
+      "Description": "Subnet ID for Availabilty Zone 3 (Repeat Zone 1 or 2 if unavaiable)",
+      "Type": "AWS::EC2::Subnet::Id"
+    }
+  },
+  "Outputs": {
+    "Manager01": {
+      "Description": "Docker Swarm Manager Node 1",
+      "Value": {
+        "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager01" } ] ]
+      }
+    },
+    "Manager02": {
+      "Description": "Docker Swarm Manager Node 2",
+      "Value": {
+        "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager02" } ] ]
+      }
+    },
+    "Manager03": {
+      "Description": "Docker Swarm Manager Node 3",
+      "Value": {
+        "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager03" } ] ]
+      }
+    }
+  },
+  "Resources": {
+    "SwarmRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com",
+                  "autoscaling.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Path": "/"
+      }
+    },
+    "SwarmPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "DependsOn": "SwarmRole",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:ListMetrics",
+                "cloudwatch:PutMetricData",
+                "ec2:DescribeTags",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "elb-update",
+        "Roles": [
+          {
+            "Ref": "SwarmRole"
+          }
+        ]
+      }
+    },
+    "InstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "DependsOn": "SwarmRole",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "SwarmRole"
+          }
+        ]
+      }
+    },
+    "Manager01": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "BlockDeviceMappings": [
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true"
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "InstanceProfile"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegion2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            "ImageId"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "ManagerInstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "DockerManagerNode"
+          },
+          {
+            "Ref": "SwarmNode"
+          }
+        ],
+        "SubnetId": {
+            "Ref": "PubSubnetAz1"
+        },
+        "UserData": {
+          "Fn::Base64" : {
+            "Fn::Join" : [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "echo 'manager-1' >/etc/hostname\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Manager-1"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "swarm-node-type",
+            "PropagateAtLaunch": true,
+            "Value": "manager"
+          },
+          {
+            "Key": "swarm-stack-id",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Ref": "AWS::StackId"
+            }
+          },
+          {
+            "Key": "DOCKER_VERSION",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Fn::FindInMap": [
+                "DockerVersion",
+                "version",
+                "docker"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Manager02": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "BlockDeviceMappings": [
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true"
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "InstanceProfile"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegion2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            "ImageId"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "ManagerInstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "DockerManagerNode"
+          },
+          {
+            "Ref": "SwarmNode"
+          }
+        ],
+        "SubnetId": {
+            "Ref": "PubSubnetAz2"
+        },
+        "UserData": {
+          "Fn::Base64" : {
+            "Fn::Join" : [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "echo 'manager-2' >/etc/hostname\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Manager-2"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "swarm-node-type",
+            "PropagateAtLaunch": true,
+            "Value": "manager"
+          },
+          {
+            "Key": "swarm-stack-id",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Ref": "AWS::StackId"
+            }
+          },
+          {
+            "Key": "DOCKER_VERSION",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Fn::FindInMap": [
+                "DockerVersion",
+                "version",
+                "docker"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Manager03": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "BlockDeviceMappings": [
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true"
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "InstanceProfile"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegion2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            "ImageId"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "ManagerInstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "DockerManagerNode"
+          },
+          {
+            "Ref": "SwarmNode"
+          }
+        ],
+        "SubnetId": {
+            "Ref": "PubSubnetAz3"
+        },
+        "UserData": {
+          "Fn::Base64" : {
+            "Fn::Join" : [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "echo 'manager-3' >/etc/hostname\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Manager-3"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "swarm-node-type",
+            "PropagateAtLaunch": true,
+            "Value": "manager"
+          },
+          {
+            "Key": "swarm-stack-id",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Ref": "AWS::StackId"
+            }
+          },
+          {
+            "Key": "DOCKER_VERSION",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Fn::FindInMap": [
+                "DockerVersion",
+                "version",
+                "docker"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
