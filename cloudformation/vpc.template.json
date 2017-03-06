@@ -222,6 +222,12 @@
       "Value": {
         "Ref": "DockerManagerNode"
       }
+    },
+    "RemoteSSH": {
+      "Description": "Allow Adminstration from this CidrBlock",
+      "Value": {
+        "Ref": "RemoteSSH"
+      }
     }
   },
   "Resources": {
