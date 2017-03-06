@@ -286,8 +286,7 @@
               "Effect": "Allow",
               "Principal": {
                 "Service": [
-                  "ec2.amazonaws.com",
-                  "autoscaling.amazonaws.com"
+                  "ec2.amazonaws.com"
                 ]
               }
             }
@@ -318,7 +317,7 @@
           ],
           "Version": "2012-10-17"
         },
-        "PolicyName": "elb-update",
+        "PolicyName": "SwarmNode",
         "Roles": [
           {
             "Ref": "SwarmRole"
@@ -407,19 +406,16 @@
           },
           {
             "Key": "swarm-node-type",
-            "PropagateAtLaunch": true,
             "Value": "manager"
           },
           {
             "Key": "swarm-stack-id",
-            "PropagateAtLaunch": true,
             "Value": {
               "Ref": "AWS::StackId"
             }
           },
           {
             "Key": "DOCKER_VERSION",
-            "PropagateAtLaunch": true,
             "Value": {
               "Fn::FindInMap": [
                 "DockerVersion",
@@ -500,19 +496,16 @@
           },
           {
             "Key": "swarm-node-type",
-            "PropagateAtLaunch": true,
             "Value": "manager"
           },
           {
             "Key": "swarm-stack-id",
-            "PropagateAtLaunch": true,
             "Value": {
               "Ref": "AWS::StackId"
             }
           },
           {
             "Key": "DOCKER_VERSION",
-            "PropagateAtLaunch": true,
             "Value": {
               "Fn::FindInMap": [
                 "DockerVersion",
@@ -593,19 +586,16 @@
           },
           {
             "Key": "swarm-node-type",
-            "PropagateAtLaunch": true,
             "Value": "manager"
           },
           {
             "Key": "swarm-stack-id",
-            "PropagateAtLaunch": true,
             "Value": {
               "Ref": "AWS::StackId"
             }
           },
           {
             "Key": "DOCKER_VERSION",
-            "PropagateAtLaunch": true,
             "Value": {
               "Fn::FindInMap": [
                 "DockerVersion",
