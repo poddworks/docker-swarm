@@ -384,6 +384,7 @@
             }
           }
         ],
+        "MapPublicIpOnLaunch": true,
         "VpcId": {
           "Ref": "Vpc"
         }
@@ -434,6 +435,7 @@
             }
           }
         ],
+        "MapPublicIpOnLaunch": true,
         "VpcId": {
           "Ref": "Vpc"
         }
@@ -484,6 +486,7 @@
             }
           }
         ],
+        "MapPublicIpOnLaunch": true,
         "VpcId": {
           "Ref": "Vpc"
         }
