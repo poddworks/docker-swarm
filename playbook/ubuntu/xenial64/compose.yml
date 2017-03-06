@@ -68,5 +68,6 @@ provision:
 provision:
 - name: Clean up and Shutdown
   action:
-    - cmd: shutdown -h now
+    - cmd: 'shutdown -h +1 || true'
+      shell: true
       sudo: true
