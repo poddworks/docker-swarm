@@ -1,0 +1,152 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Build Docker Swarm base AMI",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Instance Properties"
+          },
+          "Parameters": [
+            "BaselineAMI",
+            "KeyName"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Instance Properties"
+          },
+          "Parameters": [
+            "InstanceType",
+            "RootVolumeSize",
+            "DockerVolumeAndMetaSize"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Network Properties"
+          },
+          "Parameters": [
+            "SSHAccess",
+            "PubSubnet"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "BaselineAMI": {
+          "default": "Source Instance Image to build on."
+        },
+        "InstanceType": {
+          "default": "Instance Type to prepare AMI with."
+        },
+        "SSHAccess": {
+          "default": "Security for SSH Access."
+        },
+        "PubSubnet": {
+          "default": "Subnet with route to Internet Gateway (Public)."
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "BaselineAMI": {
+      "ConstraintDescription": "Must be a valid EC2 Image Id.",
+      "Type": "AWS::EC2::Image::Id"
+    },
+    "KeyName": {
+      "ConstraintDescription": "Must be the name of an existing EC2 KeyPair",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "InstanceType": {
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t2.large"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 HVM instance type.",
+      "Default": "t2.micro",
+      "Description": "EC2 HVM instance type.",
+      "Type": "String"
+    },
+    "RootVolumeSize": {
+      "Default": "16",
+      "Description": "Size of Root volume in GiB",
+      "MaxValue": "64",
+      "MinValue": "16",
+      "Type": "Number"
+    },
+    "DockerVolumeAndMetaSize": {
+      "Default": "16",
+      "Description": "Size of Docker volume pool in GiB",
+      "MaxValue": "1024",
+      "MinValue": "16",
+      "Type": "Number"
+    },
+    "SSHAccess": {
+      "Description": "Security Group ID for the SSH Access",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "PubSubnet": {
+      "Description": "Public Subnet ID",
+      "Type": "AWS::EC2::Subnet::Id"
+    }
+  },
+  "Resources": {
+    "EC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeSize": {
+                "Ref": "RootVolumeSize"
+              },
+              "VolumeType": "gp2"
+            }
+          },
+          {
+            "DeviceName": "/dev/xvdb",
+            "Ebs": {
+              "VolumeSize": {
+                "Ref": "DockerVolumeAndMetaSize"
+              },
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": 0,
+            "GroupSet": [
+              {
+                "Ref": "SSHAccess"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "PubSubnet"
+            }
+          }
+        ],
+        "ImageId": {
+          "Ref": "BaselineAMI"
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "build-ami"
+          }
+        ]
+      }
+    }
+  }
+}
