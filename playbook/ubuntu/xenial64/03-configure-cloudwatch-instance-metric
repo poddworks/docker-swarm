@@ -4,22 +4,17 @@ set -e
 apt-get update
 apt-get install -y unzip libwww-perl libdatetime-perl
 
-mkdir -p /cloudwatch
-pushd /cloudwatch
+mkdir -p /cloudwatch /cloudwatch-cron
 
+pushd /cloudwatch
 curl -O http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip
 unzip CloudWatchMonitoringScripts-1.2.1.zip
 rm CloudWatchMonitoringScripts-1.2.1.zip
+popd
 
-COMMAND="
-/cloudwatch/aws-scripts-mon/mon-put-instance-data.pl \
-  --mem-util \
-  --mem-used \
-  --mem-avail \
-  --disk-space-used \
-  --disk-space-avail \
-  --disk-path=/ \
-  --disk-path=/data \
-  --from-cron
-"
-echo "*/5 * * * * ${COMMAND}" | crontab -
+pushd /cloudwatch-cron
+echo "*/5 * * * * /cloudwatch/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --mem-avail --disk-space-used --disk-space-avail --disk-path=/ --disk-path=/data --from-cron" >./put-metric-cronjob
+popd
+
+# Store and Enable crontab file
+crontab /cloudwatch-cron/put-metric-cronjob
