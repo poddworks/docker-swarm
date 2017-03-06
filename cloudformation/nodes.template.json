@@ -92,7 +92,7 @@
     },
     "AWSRegion2AMI": {
       "ap-northeast-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "ami-dccb9dbb"
       },
       "ap-northeast-2": {
         "ImageId": "NOT_SUPPORTED"
@@ -345,7 +345,7 @@
         ],
         "NetworkInterfaces": [
           {
-            "AssociatePublicIpAddress": "true"
+            "AssociatePublicIpAddress": "true",
             "DeviceIndex": 0,
             "GroupSet": [
               {
@@ -438,7 +438,7 @@
         ],
         "NetworkInterfaces": [
           {
-            "AssociatePublicIpAddress": "true"
+            "AssociatePublicIpAddress": "true",
             "DeviceIndex": 0,
             "GroupSet": [
               {
@@ -531,7 +531,7 @@
         ],
         "NetworkInterfaces": [
           {
-            "AssociatePublicIpAddress": "true"
+            "AssociatePublicIpAddress": "true",
             "DeviceIndex": 0,
             "GroupSet": [
               {
