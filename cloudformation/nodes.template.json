@@ -346,6 +346,18 @@
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": "true"
+            "DeviceIndex": 0,
+            "GroupSet": [
+              {
+                "Ref": "DockerManagerNode"
+              },
+              {
+                "Ref": "SwarmNode"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "PubSubnetAz1"
+            }
           }
         ],
         "IamInstanceProfile": {
@@ -365,17 +377,6 @@
         },
         "KeyName": {
           "Ref": "KeyName"
-        },
-        "SecurityGroups": [
-          {
-            "Ref": "DockerManagerNode"
-          },
-          {
-            "Ref": "SwarmNode"
-          }
-        ],
-        "SubnetId": {
-            "Ref": "PubSubnetAz1"
         },
         "UserData": {
           "Fn::Base64" : {
@@ -438,6 +439,18 @@
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": "true"
+            "DeviceIndex": 0,
+            "GroupSet": [
+              {
+                "Ref": "DockerManagerNode"
+              },
+              {
+                "Ref": "SwarmNode"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "PubSubnetAz2"
+            }
           }
         ],
         "IamInstanceProfile": {
@@ -457,17 +470,6 @@
         },
         "KeyName": {
           "Ref": "KeyName"
-        },
-        "SecurityGroups": [
-          {
-            "Ref": "DockerManagerNode"
-          },
-          {
-            "Ref": "SwarmNode"
-          }
-        ],
-        "SubnetId": {
-            "Ref": "PubSubnetAz2"
         },
         "UserData": {
           "Fn::Base64" : {
@@ -530,6 +532,18 @@
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": "true"
+            "DeviceIndex": 0,
+            "GroupSet": [
+              {
+                "Ref": "DockerManagerNode"
+              },
+              {
+                "Ref": "SwarmNode"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "PubSubnetAz3"
+            }
           }
         ],
         "IamInstanceProfile": {
@@ -549,17 +563,6 @@
         },
         "KeyName": {
           "Ref": "KeyName"
-        },
-        "SecurityGroups": [
-          {
-            "Ref": "DockerManagerNode"
-          },
-          {
-            "Ref": "SwarmNode"
-          }
-        ],
-        "SubnetId": {
-            "Ref": "PubSubnetAz3"
         },
         "UserData": {
           "Fn::Base64" : {
