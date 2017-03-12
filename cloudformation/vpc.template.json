@@ -309,7 +309,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "RT"
+                  "GW"
                 ]
               ]
             }
