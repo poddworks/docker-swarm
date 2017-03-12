@@ -1,6 +1,16 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Lambda Function for running as worker",
+  "Conditions": {
+    "IsExternal": {
+      "Fn::Equals": [
+        {
+          "Ref": "IsWorkerExt"
+        },
+        "yes"
+      ]
+    }
+  },
   "Metadata": {
     "AWS::CloudFormation::Interface": {
       "ParameterGroups": [
@@ -10,28 +20,15 @@
           },
           "Parameters": [
             "WorkerName",
+            "IsWorkerExt",
             "AppId",
             "ServerUrl"
-          ]
-        },
-        {
-          "Label": {
-            "default": "Availabilty Zone/Subnet ID"
-          },
-          "Parameters": [
-            "WorkerSecurityGroup",
-            "WorkerSubnet1",
-            "WorkerSubnet2",
-            "WorkerSubnet3"
           ]
         }
       ],
       "ParameterLabels": {
         "WorkerName": {
           "default": "Worker Name for Application?"
-        },
-        "WorkerSecurityGroup": {
-          "default": "Worker Node Security Group?"
         }
       }
     }
@@ -41,6 +38,15 @@
       "Description": "Name for the Lambda Worker.",
       "Type": "String"
     },
+    "IsWorkerExt": {
+      "AllowedValues": [
+        "yes",
+        "no"
+      ],
+      "Default": "yes",
+      "Description": "Indicate whether this is an external worker.",
+      "Type": "String"
+    },
     "AppId": {
       "Description": "AppId for the API.",
       "Type": "String"
@@ -48,22 +54,26 @@
     "ServerUrl": {
       "Description": "Access Endpoint for the API.",
       "Type": "String"
+    }
+  },
+  "Outputs": {
+    "Function": {
+      "Description": "Function Group for worker",
+      "Value": {
+        "Ref": "Function"
+      },
+      "Export": {
+        "Name": "Function"
+      }
     },
-    "WorkerSecurityGroup": {
-      "Description": "Security Group ID for the Worker Node",
-      "Type": "AWS::EC2::SecurityGroup::Id"
-    },
-    "WorkerSubnet1": {
-      "Description": "Subnet ID for Availabilty Zone 1",
-      "Type": "AWS::EC2::Subnet::Id"
-    },
-    "WorkerSubnet2": {
-      "Description": "Subnet ID for Availabilty Zone 2",
-      "Type": "AWS::EC2::Subnet::Id"
-    },
-    "WorkerSubnet3": {
-      "Description": "Subnet ID for Availabilty Zone 3 (Repeat Zone 1 or 2 if unavaiable)",
-      "Type": "AWS::EC2::Subnet::Id"
+    "FunctionRole": {
+      "Description": "Function Group Role for worker",
+      "Value": {
+        "Ref": "FunctionRole"
+      },
+      "Export": {
+        "Name": "FunctionRole"
+      }
     }
   },
   "Resources": {
@@ -157,18 +167,26 @@
         "VpcConfig": {
           "SecurityGroupIds": [
             {
-              "Ref": "WorkerSecurityGroup"
+              "Fn::If": [
+                "IsExternal",
+                {
+                  "Fn::ImportValue": "WorkerExtNode"
+                },
+                {
+                  "Fn::ImportValue": "WorkerNode"
+                }
+              ]
             }
           ],
           "SubnetIds": [
             {
-              "Ref": "WorkerSubnet1"
+              "Fn::ImportValue": "PrivSubnetAz1"
             },
             {
-              "Ref": "WorkerSubnet2"
+              "Fn::ImportValue": "PrivSubnetAz2"
             },
             {
-              "Ref": "WorkerSubnet3"
+              "Fn::ImportValue": "PrivSubnetAz3"
             }
           ]
         },
