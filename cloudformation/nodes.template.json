@@ -205,18 +205,63 @@
       "Description": "Docker Swarm Manager Node 1",
       "Value": {
         "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager01" } ] ]
+      },
+      "Export": {
+        "Name": "Manager01Name"
+      }
+    },
+    "Manager01InteralIp": {
+      "Description": "Docker Swarm Manager Node 1",
+      "Value": {
+        "Fn::GetAtt": [
+          "Manager01",
+          "PrivateIp"
+        ]
+      },
+      "Export": {
+        "Name": "Manager01InteralIp"
       }
     },
     "Manager02": {
       "Description": "Docker Swarm Manager Node 2",
       "Value": {
         "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager02" } ] ]
+      },
+      "Export": {
+        "Name": "Manager02Name"
+      }
+    },
+    "Manager02InteralIp": {
+      "Description": "Docker Swarm Manager Node 2",
+      "Value": {
+        "Fn::GetAtt": [
+          "Manager02",
+          "PrivateIp"
+        ]
+      },
+      "Export": {
+        "Name": "Manager02InteralIp"
       }
     },
     "Manager03": {
       "Description": "Docker Swarm Manager Node 3",
       "Value": {
         "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager03" } ] ]
+      },
+      "Export": {
+        "Name": "Manager03Name"
+      }
+    },
+    "Manager03InteralIp": {
+      "Description": "Docker Swarm Manager Node 3",
+      "Value": {
+        "Fn::GetAtt": [
+          "Manager03",
+          "PrivateIp"
+        ]
+      },
+      "Export": {
+        "Name": "Manager03InteralIp"
       }
     }
   },
