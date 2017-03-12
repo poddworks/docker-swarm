@@ -1,0 +1,188 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda Function for running as worker",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Application Properties"
+          },
+          "Parameters": [
+            "WorkerName",
+            "AppId",
+            "ServerUrl"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Availabilty Zone/Subnet ID"
+          },
+          "Parameters": [
+            "WorkerSecurityGroup",
+            "WorkerSubnet1",
+            "WorkerSubnet2",
+            "WorkerSubnet3"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "WorkerName": {
+          "default": "Worker Name for Application?"
+        },
+        "WorkerSecurityGroup": {
+          "default": "Worker Node Security Group?"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "WorkerName": {
+      "Description": "Name for the Lambda Worker.",
+      "Type": "String"
+    },
+    "AppId": {
+      "Description": "AppId for the API.",
+      "Type": "String"
+    },
+    "ServerUrl": {
+      "Description": "Access Endpoint for the API.",
+      "Type": "String"
+    },
+    "WorkerSecurityGroup": {
+      "Description": "Security Group ID for the Worker Node",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "WorkerSubnet1": {
+      "Description": "Subnet ID for Availabilty Zone 1",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "WorkerSubnet2": {
+      "Description": "Subnet ID for Availabilty Zone 2",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "WorkerSubnet3": {
+      "Description": "Subnet ID for Availabilty Zone 3 (Repeat Zone 1 or 2 if unavaiable)",
+      "Type": "AWS::EC2::Subnet::Id"
+    }
+  },
+  "Resources": {
+    "FunctionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "Worker",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Function": {
+      "Type" : "AWS::Lambda::Function",
+      "DependsOn": "FunctionRole",
+      "Properties" : {
+        "Description": {
+          "Ref": "WorkerName"
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "-",
+            [
+              { "Ref": "AppId" },
+              { "Ref": "WorkerName" }
+            ]
+          ]
+        },
+        "Runtime": "nodejs4.3",
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "",
+              [
+                "exports.handler = function handler(event, context, callback) {",
+                "  callback(null, \"done\");",
+                "}"
+              ]
+            ]
+          }
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "FunctionRole",
+            "Arn"
+          ]
+        },
+        "MemorySize": 128,
+        "Timeout": 3,
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "WorkerSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            {
+              "Ref": "WorkerSubnet1"
+            },
+            {
+              "Ref": "WorkerSubnet2"
+            },
+            {
+              "Ref": "WorkerSubnet3"
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "APP_ID": {
+              "Ref": "AppId"
+            },
+            "SERVER_URL": {
+              "Ref": "ServerUrl"
+            }
+          }
+        }
+      }
+    }
+  }
+}
