@@ -205,6 +205,18 @@
         ]
       }
     },
+    "WorkerNode": {
+      "Description": "Security Group for Worker",
+      "Value": {
+        "Ref": "WorkerNode"
+      }
+    },
+    "WorkerExtNode": {
+      "Description": "Security Group for External Worker",
+      "Value": {
+        "Ref": "WorkerExtNode"
+      }
+    },
     "SwarmNode": {
       "Description": "Security Group for Internal Access",
       "Value": {
@@ -535,6 +547,122 @@
         "SubnetId": {
           "Ref": "PubSubnetAz3"
         }
+      }
+    },
+    "WorkerNode": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "GroupDescription": "Worker Node Access",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "IpProtocol": "tcp",
+            "ToPort": "80"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "443",
+            "IpProtocol": "tcp",
+            "ToPort": "443"
+          },
+          {
+            "CidrIp": {
+              "Fn::FindInMap": [
+                "VpcCidrs",
+                "vpc",
+                "cidr"
+              ]
+            },
+            "FromPort": "8080",
+            "IpProtocol": "tcp",
+            "ToPort": "8080"
+          },
+          {
+            "CidrIp": {
+              "Fn::FindInMap": [
+                "VpcCidrs",
+                "vpc",
+                "cidr"
+              ]
+            },
+            "FromPort": "8085",
+            "IpProtocol": "tcp",
+            "ToPort": "8085"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "WorkerNode"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "WorkerExtNode": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "GroupDescription": "External Worker Node Access",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "IpProtocol": "tcp",
+            "ToPort": "80"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "443",
+            "IpProtocol": "tcp",
+            "ToPort": "443"
+          },
+          {
+            "CidrIp": {
+              "Fn::FindInMap": [
+                "VpcCidrs",
+                "vpc",
+                "cidr"
+              ]
+            },
+            "FromPort": "8085",
+            "IpProtocol": "tcp",
+            "ToPort": "8085"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "WorkerExtNode"
+                ]
+              ]
+            }
+          }
+        ]
       }
     },
     "SwarmNode": {
