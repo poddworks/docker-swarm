@@ -153,26 +153,6 @@
             "InstanceType",
             "KeyName"
           ]
-        },
-        {
-          "Label": {
-            "default": "Network Properties"
-          },
-          "Parameters": [
-            "DockerManagerNode",
-            "DockerWorkerNode",
-            "SwarmNode"
-          ]
-        },
-        {
-          "Label": {
-            "default": "Availabilty Zone/Subnet ID"
-          },
-          "Parameters": [
-            "PubSubnetAz1",
-            "PubSubnetAz2",
-            "PubSubnetAz3"
-          ]
         }
       ],
       "ParameterLabels": {
@@ -181,15 +161,6 @@
         },
         "InstanceType": {
           "default": "Docker Swarm Worker instance type?"
-        },
-        "DockerManagerNode": {
-          "default": "Swarm Manager Node Security Group?"
-        },
-        "DockerWorkerNode": {
-          "default": "Swarm Worker Node Security Group?"
-        },
-        "SwarmNode": {
-          "default": "Internal Node Security Group?"
         }
       }
     }
@@ -227,30 +198,6 @@
       "ConstraintDescription": "Must be the name of an existing EC2 KeyPair",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type": "AWS::EC2::KeyPair::KeyName"
-    },
-    "DockerManagerNode": {
-      "Description": "Security Group ID for the Manager Node",
-      "Type": "AWS::EC2::SecurityGroup::Id"
-    },
-    "DockerWorkerNode": {
-      "Description": "Security Group ID for the Worker Node",
-      "Type": "AWS::EC2::SecurityGroup::Id"
-    },
-    "SwarmNode": {
-      "Description": "Security Group ID for Internal Node",
-      "Type": "AWS::EC2::SecurityGroup::Id"
-    },
-    "PubSubnetAz1": {
-      "Description": "Subnet ID for Availabilty Zone 1",
-      "Type": "AWS::EC2::Subnet::Id"
-    },
-    "PubSubnetAz2": {
-      "Description": "Subnet ID for Availabilty Zone 2",
-      "Type": "AWS::EC2::Subnet::Id"
-    },
-    "PubSubnetAz3": {
-      "Description": "Subnet ID for Availabilty Zone 3 (Repeat Zone 1 or 2 if unavaiable)",
-      "Type": "AWS::EC2::Subnet::Id"
     }
   },
   "Outputs": {
@@ -348,14 +295,14 @@
             "DeviceIndex": 0,
             "GroupSet": [
               {
-                "Ref": "DockerManagerNode"
+                "Fn::ImportValue": "DockerManagerNode"
               },
               {
-                "Ref": "SwarmNode"
+                "Fn::ImportValue": "SwarmNode"
               }
             ],
             "SubnetId": {
-              "Ref": "PubSubnetAz1"
+              "Fn::ImportValue": "PubSubnetAz1"
             }
           }
         ],
@@ -438,14 +385,14 @@
             "DeviceIndex": 0,
             "GroupSet": [
               {
-                "Ref": "DockerManagerNode"
+                "Fn::ImportValue": "DockerManagerNode"
               },
               {
-                "Ref": "SwarmNode"
+                "Fn::ImportValue": "SwarmNode"
               }
             ],
             "SubnetId": {
-              "Ref": "PubSubnetAz2"
+              "Fn::ImportValue": "PubSubnetAz2"
             }
           }
         ],
@@ -528,14 +475,14 @@
             "DeviceIndex": 0,
             "GroupSet": [
               {
-                "Ref": "DockerManagerNode"
+                "Fn::ImportValue": "DockerManagerNode"
               },
               {
-                "Ref": "SwarmNode"
+                "Fn::ImportValue": "SwarmNode"
               }
             ],
             "SubnetId": {
-              "Ref": "PubSubnetAz3"
+              "Fn::ImportValue": "PubSubnetAz3"
             }
           }
         ],
