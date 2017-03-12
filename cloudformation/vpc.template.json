@@ -173,9 +173,12 @@
       "Description": "Provisioned VPC ID",
       "Value": {
         "Ref": "Vpc"
+      },
+      "Export": {
+        "Name": "Vpc"
       }
     },
-    "PubSubnetAz1": {
+    "PubSubnetAz1Cidr": {
       "Description": "Subnet in Availabil Zone 1",
       "Value": {
         "Fn::FindInMap": [
@@ -183,9 +186,21 @@
           "pubsubnet1",
           "cidr"
         ]
+      },
+      "Export": {
+        "Name": "PubSubnetAz1Cidr"
       }
     },
-    "PubSubnetAz2": {
+    "PubSubnetAz1": {
+      "Description": "Subnet in Availabil Zone 1",
+      "Value": {
+        "Ref": "PubSubnetAz1"
+      },
+      "Export": {
+        "Name": "PubSubnetAz1"
+      }
+    },
+    "PubSubnetAz2Cidr": {
       "Description": "Subnet in Availabil Zone 2",
       "Value": {
         "Fn::FindInMap": [
@@ -193,9 +208,21 @@
           "pubsubnet2",
           "cidr"
         ]
+      },
+      "Export": {
+        "Name": "PubSubnetAz2Cidr"
       }
     },
-    "PubSubnetAz3": {
+    "PubSubnetAz2": {
+      "Description": "Subnet in Availabil Zone 2",
+      "Value": {
+        "Ref": "PubSubnetAz2"
+      },
+      "Export": {
+        "Name": "PubSubnetAz2"
+      }
+    },
+    "PubSubnetAz3Cidr": {
       "Description": "Subnet in Availabil Zone 3",
       "Value": {
         "Fn::FindInMap": [
@@ -203,36 +230,63 @@
           "pubsubnet3",
           "cidr"
         ]
+      },
+      "Export": {
+        "Name": "PubSubnetAz3Cidr"
+      }
+    },
+    "PubSubnetAz3": {
+      "Description": "Subnet in Availabil Zone 3",
+      "Value": {
+        "Ref": "PubSubnetAz3"
+      },
+      "Export": {
+        "Name": "PubSubnetAz3"
       }
     },
     "WorkerNode": {
       "Description": "Security Group for Worker",
       "Value": {
         "Ref": "WorkerNode"
+      },
+      "Export": {
+        "Name": "WorkerNode"
       }
     },
     "WorkerExtNode": {
       "Description": "Security Group for External Worker",
       "Value": {
         "Ref": "WorkerExtNode"
+      },
+      "Export": {
+        "Name": "WorkerExtNode"
       }
     },
     "SwarmNode": {
       "Description": "Security Group for Internal Access",
       "Value": {
         "Ref": "SwarmNode"
+      },
+      "Export": {
+        "Name": "SwarmNode"
       }
     },
     "DockerWorkerNode": {
       "Description": "Security Group for Docker Worker Node",
       "Value": {
         "Ref": "DockerWorkerNode"
+      },
+      "Export": {
+        "Name": "DockerWorkerNode"
       }
     },
     "DockerManagerNode": {
       "Description": "Security Group for Docker Manager Node",
       "Value": {
         "Ref": "DockerManagerNode"
+      },
+      "Export": {
+        "Name": "DockerManagerNode"
       }
     },
     "RemoteSSH": {
