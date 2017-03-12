@@ -60,7 +60,10 @@
     "Function": {
       "Description": "Function Group for worker",
       "Value": {
-        "Ref": "Function"
+        "Fn::GetAtt": [
+          "Function",
+          "Arn"
+        ]
       },
       "Export": {
         "Name": "Function"
@@ -69,7 +72,10 @@
     "FunctionRole": {
       "Description": "Function Group Role for worker",
       "Value": {
-        "Ref": "FunctionRole"
+        "Fn::GetAtt": [
+          "FunctionRole",
+          "Arn"
+        ]
       },
       "Export": {
         "Name": "FunctionRole"
