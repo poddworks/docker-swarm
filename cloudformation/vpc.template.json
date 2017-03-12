@@ -28,6 +28,15 @@
       "pubsubnet3": {
         "cidr": "172.31.32.0/20"
       },
+      "privsubnet1": {
+        "cidr": "172.31.48.0/20"
+      },
+      "privsubnet2": {
+        "cidr": "172.31.64.0/20"
+      },
+      "privsubnet3": {
+        "cidr": "172.31.80.0/20"
+      },
       "vpc": {
         "cidr": "172.31.0.0/16"
       }
@@ -242,6 +251,72 @@
       },
       "Export": {
         "Name": "PubSubnetAz3"
+      }
+    },
+    "PrivSubnetAz1Cidr": {
+      "Description": "Private Subnet in Availabil Zone 1",
+      "Value": {
+        "Fn::FindInMap": [
+          "VpcCidrs",
+          "privsubnet1",
+          "cidr"
+        ]
+      },
+      "Export": {
+        "Name": "PrivSubnetAz1Cidr"
+      }
+    },
+    "PrivSubnetAz1": {
+      "Description": "Private Subnet in Availabil Zone 1",
+      "Value": {
+        "Ref": "PrivSubnetAz1"
+      },
+      "Export": {
+        "Name": "PrivSubnetAz1"
+      }
+    },
+    "PrivSubnetAz2Cidr": {
+      "Description": "Private Subnet in Availabil Zone 2",
+      "Value": {
+        "Fn::FindInMap": [
+          "VpcCidrs",
+          "privsubnet2",
+          "cidr"
+        ]
+      },
+      "Export": {
+        "Name": "PrivSubnetAz2Cidr"
+      }
+    },
+    "PrivSubnetAz2": {
+      "Description": "Private Subnet in Availabil Zone 2",
+      "Value": {
+        "Ref": "PrivSubnetAz2"
+      },
+      "Export": {
+        "Name": "PrivSubnetAz2"
+      }
+    },
+    "PrivSubnetAz3Cidr": {
+      "Description": "Private Subnet in Availabil Zone 3",
+      "Value": {
+        "Fn::FindInMap": [
+          "VpcCidrs",
+          "privsubnet3",
+          "cidr"
+        ]
+      },
+      "Export": {
+        "Name": "PrivSubnetAz3Cidr"
+      }
+    },
+    "PrivSubnetAz3": {
+      "Description": "Private Subnet in Availabil Zone 3",
+      "Value": {
+        "Ref": "PrivSubnetAz3"
+      },
+      "Export": {
+        "Name": "PrivSubnetAz3"
       }
     },
     "WorkerNode": {
@@ -600,6 +675,265 @@
         },
         "SubnetId": {
           "Ref": "PubSubnetAz3"
+        }
+      }
+    },
+    "NatGatewayIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+    "NatGateway": {
+      "Type" : "AWS::EC2::NatGateway",
+      "DependsOn": [
+        "NatGatewayIP",
+        "PubSubnetAz1"
+      ],
+      "Properties" : {
+        "AllocationId" : {
+          "Fn::GetAtt" : [
+            "NatGatewayIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId" : {
+          "Ref": "PubSubnetAz1"
+        }
+      }
+    },
+    "RouteViaNat": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "NAT"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PrivateRouteViaNat": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "NatGateway",
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NatGateway"
+        },
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        }
+      }
+    },
+    "PrivSubnetAz1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            {
+              "Fn::FindInMap": [
+                "AWSRegion2AZ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "AZ0"
+              ]
+            },
+            {
+              "Fn::GetAZs": {
+                "Ref": "AWS::Region"
+              }
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "VpcCidrs",
+            "privsubnet1",
+            "cidr"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "PrivSubnet1"
+                ]
+              ]
+            }
+          }
+        ],
+        "MapPublicIpOnLaunch": false,
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PrivSubnetAz2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            {
+              "Fn::FindInMap": [
+                "AWSRegion2AZ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "AZ1"
+              ]
+            },
+            {
+              "Fn::GetAZs": {
+                "Ref": "AWS::Region"
+              }
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "VpcCidrs",
+            "privsubnet2",
+            "cidr"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "PrivSubnet2"
+                ]
+              ]
+            }
+          }
+        ],
+        "MapPublicIpOnLaunch": false,
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PrivSubnetAz3": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            {
+              "Fn::FindInMap": [
+                "AWSRegion2AZ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "AZ2"
+              ]
+            },
+            {
+              "Fn::GetAZs": {
+                "Ref": "AWS::Region"
+              }
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "VpcCidrs",
+            "privsubnet3",
+            "cidr"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "PrivSubnet3"
+                ]
+              ]
+            }
+          }
+        ],
+        "MapPublicIpOnLaunch": false,
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "PrivSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "PrivSubnetAz1",
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        },
+        "SubnetId": {
+          "Ref": "PrivSubnetAz1"
+        }
+      }
+    },
+    "PrivSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "PrivSubnetAz2",
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        },
+        "SubnetId": {
+          "Ref": "PrivSubnetAz2"
+        }
+      }
+    },
+    "PrivSubnet3RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "PrivSubnetAz3",
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        },
+        "SubnetId": {
+          "Ref": "PrivSubnetAz3"
         }
       }
     },
