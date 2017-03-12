@@ -293,34 +293,34 @@
           ],
           "Version": "2012-10-17"
         },
-        "Path": "/"
-      }
-    },
-    "SwarmPolicy": {
-      "Type": "AWS::IAM::Policy",
-      "DependsOn": "SwarmRole",
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "cloudwatch:GetMetricStatistics",
-                "cloudwatch:ListMetrics",
-                "cloudwatch:PutMetricData",
-                "ec2:DescribeTags",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ],
-          "Version": "2012-10-17"
-        },
-        "PolicyName": "SwarmNode",
-        "Roles": [
+        "Path": "/",
+        "Policies": [
           {
-            "Ref": "SwarmRole"
+            "PolicyName": "SwarmNode",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "cloudwatch:GetMetricStatistics",
+                    "cloudwatch:ListMetrics",
+                    "cloudwatch:PutMetricData",
+                    "ec2:DescribeTags",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
           }
         ]
       }
