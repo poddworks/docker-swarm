@@ -6,7 +6,7 @@
       "Fn::Equals": [
         {
           "Fn::FindInMap": [
-            "AWSRegion2AZ",
+            "AWSRegion2AMI",
             {
               "Ref": "AWS::Region"
             },
@@ -18,120 +18,62 @@
     }
   },
   "Mappings": {
-    "AWSRegion2AZ": {
-      "ap-northeast-1": {
-        "EFSSupport": "no",
-        "Name": "Tokyo",
-        "NumAZs": "2"
-      },
-      "ap-northeast-2": {
-        "EFSSupport": "no",
-        "Name": "Seoul",
-        "NumAZs": "2"
-      },
-      "ap-south-1": {
-        "EFSSupport": "no",
-        "Name": "Mumbai",
-        "NumAZs": "2"
-      },
-      "ap-southeast-1": {
-        "EFSSupport": "no",
-        "Name": "Singapore",
-        "NumAZs": "2"
-      },
-      "ap-southeast-2": {
-        "EFSSupport": "no",
-        "Name": "Sydney",
-        "NumAZs": "3"
-      },
-      "ca-central-1": {
-        "EFSSupport": "no",
-        "Name": "Central",
-        "NumAZs": "2"
-      },
-      "eu-central-1": {
-        "EFSSupport": "no",
-        "Name": "Frankfurt",
-        "NumAZs": "2"
-      },
-      "eu-west-1": {
-        "EFSSupport": "no",
-        "Name": "Ireland",
-        "NumAZs": "3"
-      },
-      "eu-west-2": {
-        "EFSSupport": "no",
-        "Name": "London",
-        "NumAZs": "2"
-      },
-      "sa-east-1": {
-        "EFSSupport": "no",
-        "Name": "Sao Paulo",
-        "NumAZs": "3"
-      },
-      "us-east-1": {
-        "EFSSupport": "no",
-        "Name": "N. Virgina",
-        "NumAZs": "4"
-      },
-      "us-east-2": {
-        "EFSSupport": "no",
-        "Name": "Ohio",
-        "NumAZs": "3"
-      },
-      "us-west-1": {
-        "EFSSupport": "no",
-        "Name": "N. California",
-        "NumAZs": "2"
-      },
-      "us-west-2": {
-        "EFSSupport": "no",
-        "Name": "Oregon",
-        "NumAZs": "3"
-      }
-    },
     "AWSRegion2AMI": {
       "ap-northeast-1": {
-        "ImageId": "ami-dccb9dbb"
+        "ImageId": "ami-dccb9dbb",
+        "EFSSupport": "no"
       },
       "ap-northeast-2": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "ap-south-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "ap-southeast-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "ap-southeast-2": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "ca-central-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "eu-central-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "eu-west-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "eu-west-2": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "sa-east-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "us-east-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "us-east-2": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "us-west-1": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       },
       "us-west-2": {
-        "ImageId": "NOT_SUPPORTED"
+        "ImageId": "NOT_SUPPORTED",
+        "EFSSupport": "no"
       }
     },
     "DockerVersion": {
@@ -204,14 +146,26 @@
     "Manager01": {
       "Description": "Docker Swarm Manager Node 1",
       "Value": {
-        "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager01" } ] ]
+        "Ref": "Manager01"
       },
       "Export": {
         "Name": "Manager01Name"
       }
     },
-    "Manager01InteralIp": {
-      "Description": "Docker Swarm Manager Node 1",
+    "Manager01PublicIp": {
+      "Description": "Docker Swarm Manager Node 1 Public IP",
+      "Value": {
+        "Fn::GetAtt": [
+          "Manager01",
+          "PublicIp"
+        ]
+      },
+      "Export": {
+        "Name": "Manager01PublicIp"
+      }
+    },
+    "Manager01PrivateIp": {
+      "Description": "Docker Swarm Manager Node 1 Private IP",
       "Value": {
         "Fn::GetAtt": [
           "Manager01",
@@ -219,20 +173,32 @@
         ]
       },
       "Export": {
-        "Name": "Manager01InteralIp"
+        "Name": "Manager01PrivateIp"
       }
     },
     "Manager02": {
       "Description": "Docker Swarm Manager Node 2",
       "Value": {
-        "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager02" } ] ]
+        "Ref": "Manager02"
       },
       "Export": {
         "Name": "Manager02Name"
       }
     },
-    "Manager02InteralIp": {
-      "Description": "Docker Swarm Manager Node 2",
+    "Manager02PublicIp": {
+      "Description": "Docker Swarm Manager Node 2 Public IP",
+      "Value": {
+        "Fn::GetAtt": [
+          "Manager02",
+          "PublicIp"
+        ]
+      },
+      "Export": {
+        "Name": "Manager02PublicIp"
+      }
+    },
+    "Manager02PrivateIp": {
+      "Description": "Docker Swarm Manager Node 2 Private IP",
       "Value": {
         "Fn::GetAtt": [
           "Manager02",
@@ -240,20 +206,32 @@
         ]
       },
       "Export": {
-        "Name": "Manager02InteralIp"
+        "Name": "Manager02PrivateIp"
       }
     },
     "Manager03": {
       "Description": "Docker Swarm Manager Node 3",
       "Value": {
-        "Fn::Join": [ "-", [ "manager-1", { "Ref": "Manager03" } ] ]
+        "Ref": "Manager03"
       },
       "Export": {
         "Name": "Manager03Name"
       }
     },
-    "Manager03InteralIp": {
-      "Description": "Docker Swarm Manager Node 3",
+    "Manager03PublicIp": {
+      "Description": "Docker Swarm Manager Node 3 Public IP",
+      "Value": {
+        "Fn::GetAtt": [
+          "Manager03",
+          "PublicIp"
+        ]
+      },
+      "Export": {
+        "Name": "Manager03PublicIp"
+      }
+    },
+    "Manager03PrivateIp": {
+      "Description": "Docker Swarm Manager Node 3 Private IP",
       "Value": {
         "Fn::GetAtt": [
           "Manager03",
@@ -261,7 +239,7 @@
         ]
       },
       "Export": {
-        "Name": "Manager03InteralIp"
+        "Name": "Manager03PrivateIp"
       }
     }
   },
@@ -597,6 +575,67 @@
             }
           }
         ]
+      }
+    },
+    "SwarmTargetGroup": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckTimeoutSeconds": 3,
+        "HealthyThresholdCount": 4,
+        "UnhealthyThresholdCount": 3,
+        "Protocol": "HTTP",
+        "Port": 8080,
+        "Targets": [
+          {
+            "Id": { "Ref" : "Manager01" },
+            "Port": 8080
+          },
+          {
+            "Id": { "Ref" : "Manager02" },
+            "Port": 8080
+          },
+          {
+            "Id": { "Ref" : "Manager03" },
+            "Port": 8080
+          }
+        ],
+        "VpcId": {
+          "Fn::ImportValue" : "Vpc"
+        },
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "SwarmTargetGroup"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "SwarmHTTPListener" : {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "TargetGroupArn": { "Ref": "SwarmTargetGroup" },
+            "Type": "forward"
+          }
+        ],
+        "LoadBalancerArn": {
+          "Fn::ImportValue" : "LoadBalancer"
+        },
+        "Protocol": "HTTP",
+        "Port": "80"
       }
     }
   }
