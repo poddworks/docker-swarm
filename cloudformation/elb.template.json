@@ -1,0 +1,185 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Load Balancer for Docker Swarm Cluster",
+  "Conditions": {
+    "Has3Azs": {
+      "Fn::Equals": [
+        {
+          "Fn::FindInMap": [
+            "AWSRegion2AZ",
+            {
+              "Ref": "AWS::Region"
+            },
+            "NumAZs"
+          ]
+        },
+        "3"
+      ]
+    }
+  },
+  "Mappings": {
+    "AWSRegion2AZ": {
+      "ap-northeast-1": {
+        "NumAZs": "2"
+      },
+      "ap-northeast-2": {
+        "NumAZs": "2"
+      },
+      "ap-south-1": {
+        "NumAZs": "2"
+      },
+      "ap-southeast-1": {
+        "NumAZs": "2"
+      },
+      "ap-southeast-2": {
+        "NumAZs": "2"
+      },
+      "ca-central-1": {
+        "NumAZs": "2"
+      },
+      "eu-central-1": {
+        "NumAZs": "3"
+      },
+      "eu-west-1": {
+        "NumAZs": "3"
+      },
+      "eu-west-2": {
+        "NumAZs": "2"
+      },
+      "sa-east-1": {
+        "NumAZs": "3"
+      },
+      "us-east-1": {
+        "NumAZs": "4"
+      },
+      "us-east-2": {
+        "NumAZs": "3"
+      },
+      "us-west-1": {
+        "NumAZs": "2"
+      },
+      "us-west-2": {
+        "NumAZs": "3"
+      }
+    }
+  },
+  "Outputs": {
+    "PublicAccess": {
+      "Description": "SecurityGroup for Public Access",
+      "Value": {
+        "Ref": "PublicAccess"
+      },
+      "Export": {
+        "Name": "PublicAccess"
+      }
+    },
+    "LoadBalancer": {
+      "Description": "LoadBalancer for Public Access",
+      "Value": {
+        "Ref": "LoadBalancer"
+      },
+      "Export": {
+        "Name": "LoadBalancer"
+      }
+    }
+  },
+  "Resources": {
+    "PublicAccess": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Public Network Access",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "IpProtocol": "tcp",
+            "ToPort": "80"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "443",
+            "IpProtocol": "tcp",
+            "ToPort": "443"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": {
+              "Fn::FindInMap": [
+                "VpcCidrs",
+                "vpc",
+                "cidr"
+              ]
+            },
+            "FromPort": "0",
+            "IpProtocol": "tcp",
+            "ToPort": "65535"
+          }
+        ],
+        "VpcId": {
+          "Fn::ImportValue": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "PublicAccess"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "LoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Scheme" : "internet-facing",
+        "LoadBalancerAttributes": [
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "PublicAccess"
+          }
+        ],
+        "Subnets": [
+          {
+            "Fn::ImportValue": "PubSubnetAz1"
+          },
+          {
+            "Fn::ImportValue": "PubSubnetAz2"
+          },
+          {
+            "Fn::If": [
+              "Has3Azs",
+              { "Fn::ImportValue": "PubSubnetAz3" },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "LoadBalancer"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
