@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  mongo-2:
+    container_name: mongo-2
+    image: mongo:3
+    command: >
+      --replSet ${REPL_SET}
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: mongo
+        tag: "{{ .Name }}"
+    volumes:
+      - config:/data/configdb
+      - data:/data/db
+    networks:
+      - default
+
+networks:
+  default:
+    external:
+      name: ${network}
+
+volumes:
+  config:
+    external:
+      name: ${mongo_configdb_vol}
+  data:
+    external:
+      name: ${mongo_data_vol}
