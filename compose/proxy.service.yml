@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  proxy:
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+    image: poddworks/nginx-proxy:latest
+    environment:
+      DEVOPS_CONFIG_ROOT: ${config_root_key}
+      REGISTRY_TYPE: etcd
+      REGISTRY_NODE_FLAG: ${registry_node_flag}
+    ports:
+      - "8080:8080"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: proxy
+        tag: "{{ .Name }}"
+    networks:
+      - default
+
+networks:
+  default:
+    external:
+      name: ${network}
