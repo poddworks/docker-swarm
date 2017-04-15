@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+truncate -s0 /etc/security/limits.conf
+
+truncate -s0 /etc/sysctl.conf
+
+truncate -s0 /etc/sysfs.conf
+
+echo "kernel/mm/transparent_hugepage/enabled = never" >>/etc/sysfs.conf
+
+echo "* soft nofile 65536" >>/etc/security/limits.conf
+echo "* hard nofile 65536" >>/etc/security/limits.conf
+echo "* soft nproc  65536" >>/etc/security/limits.conf
+echo "* hard nproc  65536" >>/etc/security/limits.conf
+
+# MONGO
+echo "vm.dirty_background_ratio    = 5"    >>/etc/sysctl.conf
+echo "vm.dirty_ratio               = 15"   >>/etc/sysctl.conf
+echo "vm.swappiness                = 1"    >>/etc/sysctl.conf
+echo "net.core.somaxconn           = 4096" >>/etc/sysctl.conf
+echo "net.ipv4.tcp_fin_timeout     = 30"   >>/etc/sysctl.conf
+echo "net.ipv4.tcp_keepalive_intvl = 30"   >>/etc/sysctl.conf
+echo "net.ipv4.tcp_keepalive_time  = 120"  >>/etc/sysctl.conf
+echo "net.ipv4.tcp_max_syn_backlog = 4096" >>/etc/sysctl.conf
+
+# REDIS
+echo "net.core.somaxconn   = 4096" >>/etc/sysctl.conf
+echo "vm.overcommit_memory = 1"    >>/etc/sysctl.conf

@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-# Halt docker daemon
-systemctl stop docker
-
 # Setup systemd launch command + docker daemon config
 mkdir -p /etc/docker /etc/systemd/system/docker.service.d
 

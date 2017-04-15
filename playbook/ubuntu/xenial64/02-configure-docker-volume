@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+# Prepare mount point
+mkdir /data
+
+# Setup Docker Graph Volume
+pvcreate /dev/xvdb
+vgcreate data /dev/xvdb
+lvcreate -l 100%FREE -n docker data
+mkfs.ext4 /dev/data/docker
+echo "/dev/mapper/data-docker /data ext4 rw 0 0" >>/etc/fstab

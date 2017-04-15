@@ -2,5 +2,5 @@
 set -e
 
 # install common utility packages
-apt-get update
-apt-get install -y htop lvm2 ntp jq
+apt update
+apt install -y htop lvm2 ntp jq sysfsutils
