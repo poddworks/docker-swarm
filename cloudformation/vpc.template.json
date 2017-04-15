@@ -276,6 +276,15 @@
       "Value": {
         "Ref": "RemoteSSH"
       }
+    },
+    "DbAdminAccess": {
+      "Description": "Security Group for Database Admin",
+      "Value": {
+        "Ref": "DbAdminAccess"
+      },
+      "Export": {
+        "Name": "DbAdminAccess"
+      }
     }
   },
   "Resources": {
@@ -766,6 +775,58 @@
                     "Ref": "AWS::StackName"
                   },
                   "DockerManagerNode"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "DbAdminAccess": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "GroupDescription": "Database Admin Access",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": {
+              "Ref": "RemoteSSH"
+            },
+            "FromPort": "2379",
+            "IpProtocol": "tcp",
+            "ToPort": "2379"
+          },
+          {
+            "CidrIp": {
+              "Ref": "RemoteSSH"
+            },
+            "FromPort": "6379",
+            "IpProtocol": "tcp",
+            "ToPort": "6379"
+          },
+          {
+            "CidrIp": {
+              "Ref": "RemoteSSH"
+            },
+            "FromPort": "27017",
+            "IpProtocol": "tcp",
+            "ToPort": "27017"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "AdminAccess"
                 ]
               ]
             }
