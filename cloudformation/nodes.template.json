@@ -20,66 +20,52 @@
   "Mappings": {
     "AWSRegion2AMI": {
       "ap-northeast-1": {
-        "ImageId": "ami-dccb9dbb",
         "EFSSupport": "no"
       },
       "ap-northeast-2": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "ap-south-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "ap-southeast-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "ap-southeast-2": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "ca-central-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "eu-central-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "eu-west-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "eu-west-2": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "sa-east-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "us-east-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "us-east-2": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "us-west-1": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       },
       "us-west-2": {
-        "ImageId": "NOT_SUPPORTED",
         "EFSSupport": "no"
       }
     },
     "DockerVersion": {
       "version": {
         "channel": "stable",
-        "docker": "17.03.0-ee-1"
+        "docker": "17.03.1-ce"
       }
     }
   },
@@ -93,7 +79,8 @@
           "Parameters": [
             "ManagerInstanceType",
             "InstanceType",
-            "KeyName"
+            "KeyName",
+            "AmiId"
           ]
         }
       ],
@@ -103,6 +90,9 @@
         },
         "InstanceType": {
           "default": "Docker Swarm Worker instance type?"
+        },
+        "AmiId": {
+          "default": "Docker Swarm Engine Image Id?"
         }
       }
     }
@@ -135,6 +125,10 @@
       "Default": "t2.micro",
       "Description": "EC2 HVM instance type (t2.micro, m3.medium, etc).",
       "Type": "String"
+    },
+    "AmiId": {
+      "ConstraintDescription": "Must be a valid EC2 Image Id.",
+      "Type": "AWS::EC2::Image::Id"
     },
     "KeyName": {
       "ConstraintDescription": "Must be the name of an existing EC2 KeyPair",
@@ -333,13 +327,7 @@
           "Ref": "InstanceProfile"
         },
         "ImageId": {
-          "Fn::FindInMap": [
-            "AWSRegion2AMI",
-            {
-              "Ref": "AWS::Region"
-            },
-            "ImageId"
-          ]
+          "Ref": "AmiId"
         },
         "InstanceType": {
           "Ref": "ManagerInstanceType"
@@ -423,13 +411,7 @@
           "Ref": "InstanceProfile"
         },
         "ImageId": {
-          "Fn::FindInMap": [
-            "AWSRegion2AMI",
-            {
-              "Ref": "AWS::Region"
-            },
-            "ImageId"
-          ]
+          "Ref": "AmiId"
         },
         "InstanceType": {
           "Ref": "ManagerInstanceType"
@@ -513,13 +495,7 @@
           "Ref": "InstanceProfile"
         },
         "ImageId": {
-          "Fn::FindInMap": [
-            "AWSRegion2AMI",
-            {
-              "Ref": "AWS::Region"
-            },
-            "ImageId"
-          ]
+          "Ref": "AmiId"
         },
         "InstanceType": {
           "Ref": "ManagerInstanceType"
