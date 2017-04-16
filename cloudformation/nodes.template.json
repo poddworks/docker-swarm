@@ -82,6 +82,14 @@
             "KeyName",
             "AmiId"
           ]
+        },
+        {
+          "Label": {
+            "default": "LoadBalancer Properties"
+          },
+          "Parameters": [
+            "ServerCertificate"
+          ]
         }
       ],
       "ParameterLabels": {
@@ -93,6 +101,9 @@
         },
         "AmiId": {
           "default": "Docker Swarm Engine Image Id?"
+        },
+        "Certificates": {
+          "default": "Which Certificate to use?"
         }
       }
     }
@@ -134,6 +145,10 @@
       "ConstraintDescription": "Must be the name of an existing EC2 KeyPair",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "ServerCertificate": {
+      "ConstraintDescription": "Must be a valid Certificate Arn from ACM",
+      "Type": "String"
     }
   },
   "Outputs": {
@@ -612,6 +627,27 @@
         },
         "Protocol": "HTTP",
         "Port": "80"
+      }
+    },
+    "SwarmHTTPSListener" : {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "TargetGroupArn": { "Ref": "SwarmTargetGroup" },
+            "Type": "forward"
+          }
+        ],
+        "LoadBalancerArn": {
+          "Fn::ImportValue" : "LoadBalancer"
+        },
+        "Certificates": [
+          {
+            "CertificateArn": { "Ref": "ServerCertificate" }
+          }
+        ],
+        "Protocol": "HTTPS",
+        "Port": "443"
       }
     }
   }
