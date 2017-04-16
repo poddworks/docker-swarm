@@ -8,6 +8,7 @@ truncate -s0 /etc/sysctl.conf
 truncate -s0 /etc/sysfs.conf
 
 echo "kernel/mm/transparent_hugepage/enabled = never" >>/etc/sysfs.conf
+echo "kernel/mm/transparent_hugepage/defrag = never" >>/etc/sysfs.conf
 
 echo "* soft nofile 65536" >>/etc/security/limits.conf
 echo "* hard nofile 65536" >>/etc/security/limits.conf
