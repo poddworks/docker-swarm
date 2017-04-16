@@ -297,6 +297,14 @@
                   ],
                   "Effect": "Allow",
                   "Resource": "*"
+                },
+                {
+                  "Action": [
+                    "s3:CreateBucket",
+                    "s3:PutObject"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
                 }
               ]
             }
