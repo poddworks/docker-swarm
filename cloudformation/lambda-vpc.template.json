@@ -1,6 +1,16 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Lambda Function for running as worker",
+  "Conditions": {
+    "IsExternal": {
+      "Fn::Equals": [
+        {
+          "Ref": "IsWorkerExt"
+        },
+        "yes"
+      ]
+    }
+  },
   "Metadata": {
     "AWS::CloudFormation::Interface": {
       "ParameterGroups": [
@@ -10,6 +20,7 @@
           },
           "Parameters": [
             "WorkerName",
+            "IsWorkerExt",
             "AppId",
             "ServerUrl"
           ]
@@ -25,6 +36,15 @@
   "Parameters": {
     "WorkerName": {
       "Description": "Name for the Lambda Worker.",
+      "Type": "String"
+    },
+    "IsWorkerExt": {
+      "AllowedValues": [
+        "yes",
+        "no"
+      ],
+      "Default": "yes",
+      "Description": "Indicate whether this is an external worker.",
       "Type": "String"
     },
     "AppId": {
@@ -85,10 +105,19 @@
         "Path": "/",
         "Policies": [
           {
-            "PolicyName": "Worker",
+            "PolicyName": "VpcWorker",
             "PolicyDocument": {
               "Version": "2012-10-17",
               "Statement": [
+                {
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
                 {
                   "Action": [
                     "logs:CreateLogGroup",
@@ -150,6 +179,56 @@
         },
         "MemorySize": 128,
         "Timeout": 3,
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Fn::If": [
+                "IsExternal",
+                {
+                  "Fn::ImportValue": "WorkerNode"
+                },
+                {
+                  "Fn::ImportValue": "WorkerExtNode"
+                }
+              ]
+            }
+          ],
+          "SubnetIds": [
+            {
+              "Fn::If": [
+                "IsExternal",
+                {
+                  "Fn::ImportValue": "PubSubnetAz1"
+                },
+                {
+                  "Fn::ImportValue": "PrivSubnetAz1"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsExternal",
+                {
+                  "Fn::ImportValue": "PubSubnetAz2"
+                },
+                {
+                  "Fn::ImportValue": "PrivSubnetAz2"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsExternal",
+                {
+                  "Fn::ImportValue": "PubSubnetAz3"
+                },
+                {
+                  "Fn::ImportValue": "PrivSubnetAz3"
+                }
+              ]
+            }
+          ]
+        },
         "Environment": {
           "Variables": {
             "APP_ID": {
