@@ -17,7 +17,7 @@ services:
       driver: awslogs
       options:
         awslogs-region: ${aws_region}
-        awslogs-group: proxy
+        awslogs-group: ${aws_log_group}
         tag: "{{ .Name }}"
     networks:
       - default

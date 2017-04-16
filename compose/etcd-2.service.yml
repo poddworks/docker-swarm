@@ -15,7 +15,7 @@ services:
       driver: awslogs
       options:
         awslogs-region: ${aws_region}
-        awslogs-group: discovery
+        awslogs-group: ${aws_log_group}
         tag: "{{ .Name }}"
     volumes:
       - data:/etcd-data

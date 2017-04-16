@@ -5,12 +5,12 @@ services:
     container_name: mongo-3
     image: mongo:3
     command: >
-      --replSet ${REPL_SET}
+      --replSet ${repl_set}
     logging:
       driver: awslogs
       options:
         awslogs-region: ${aws_region}
-        awslogs-group: mongo
+        awslogs-group: ${aws_log_group}
         tag: "{{ .Name }}"
     volumes:
       - config:/data/configdb
