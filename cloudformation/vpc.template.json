@@ -178,6 +178,19 @@
         "Name": "Vpc"
       }
     },
+    "VpcCidr": {
+      "Description": "Cidr Block allocated for VPC",
+      "Value": {
+        "Fn::FindInMap": [
+          "VpcCidrs",
+          "vpc",
+          "cidr"
+        ]
+      },
+      "Export": {
+        "Name": "VpcCidr"
+      }
+    },
     "PubSubnetAz1Cidr": {
       "Description": "Subnet in Availabil Zone 1",
       "Value": {

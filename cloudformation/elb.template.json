@@ -105,11 +105,7 @@
         "SecurityGroupEgress": [
           {
             "CidrIp": {
-              "Fn::FindInMap": [
-                "VpcCidrs",
-                "vpc",
-                "cidr"
-              ]
+              "Fn::ImportValue": "VpcCidr"
             },
             "FromPort": "0",
             "IpProtocol": "tcp",
