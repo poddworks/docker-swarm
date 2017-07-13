@@ -6,7 +6,7 @@ services:
       mode: global
       restart_policy:
         condition: on-failure
-    image: poddworks/nginx-proxy:latest
+    image: poddworks/nginx-proxy:stable
     environment:
       DEVOPS_CONFIG_ROOT: ${config_root_key}
       REGISTRY_TYPE: etcd
