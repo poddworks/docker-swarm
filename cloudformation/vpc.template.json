@@ -298,6 +298,15 @@
       "Export": {
         "Name": "DbAdminAccess"
       }
+    },
+    "PublicAccess": {
+      "Description": "SecurityGroup for Public Access",
+      "Value": {
+        "Ref": "PublicAccess"
+      },
+      "Export": {
+        "Name": "PublicAccess"
+      }
     }
   },
   "Resources": {
@@ -840,6 +849,55 @@
                     "Ref": "AWS::StackName"
                   },
                   "AdminAccess"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "PublicAccess": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Public Network Access",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "IpProtocol": "tcp",
+            "ToPort": "80"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "443",
+            "IpProtocol": "tcp",
+            "ToPort": "443"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": {
+              "Fn::ImportValue": "VpcCidr"
+            },
+            "FromPort": "0",
+            "IpProtocol": "tcp",
+            "ToPort": "65535"
+          }
+        ],
+        "VpcId": {
+          "Fn::ImportValue": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "PublicAccess"
                 ]
               ]
             }
