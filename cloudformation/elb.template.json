@@ -63,6 +63,13 @@
       }
     }
   },
+  "Parameters": {
+    "ServerCertificate": {
+      "ConstraintDescription": "Must be a valid Certificate Arn",
+      "Description": "Name for ACM Certificate",
+      "Type": "String"
+    }
+  },
   "Outputs": {
     "LoadBalancer": {
       "Description": "LoadBalancer for Public Access",
@@ -71,6 +78,24 @@
       },
       "Export": {
         "Name": "LoadBalancer"
+      }
+    },
+    "HTTPListener": {
+      "Description": "LoadBalancer HTTP listener",
+      "Value": {
+        "Ref": "HTTPListener"
+      },
+      "Export": {
+        "Name": "HTTPListener"
+      }
+    },
+    "HTTPSListener": {
+      "Description": "LoadBalancer HTTPS listener",
+      "Value": {
+        "Ref": "HTTPSListener"
+      },
+      "Export": {
+        "Name": "HTTPSListener"
       }
     }
   },
@@ -117,6 +142,76 @@
             }
           }
         ]
+      }
+    },
+    "DenyTargetGroup": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckPort": 65535,
+        "HealthCheckTimeoutSeconds": 3,
+        "HealthyThresholdCount": 4,
+        "UnhealthyThresholdCount": 3,
+        "Protocol": "HTTP",
+        "Port": 65535,
+        "Targets": [],
+        "VpcId": {
+          "Fn::ImportValue" : "Vpc"
+        },
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "DenyTargetGroup"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "HTTPListener" : {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "TargetGroupArn": { "Ref": "DenyTargetGroup" },
+            "Type": "forward"
+          }
+        ],
+        "LoadBalancerArn": {
+          "Ref" : "LoadBalancer"
+        },
+        "Protocol": "HTTP",
+        "Port": "80"
+      }
+    },
+    "HTTPSListener" : {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "TargetGroupArn": { "Ref": "DenyTargetGroup" },
+            "Type": "forward"
+          }
+        ],
+        "LoadBalancerArn": {
+          "Ref" : "LoadBalancer"
+        },
+        "Certificates": [
+          {
+            "CertificateArn": { "Ref": "ServerCertificate" }
+          }
+        ],
+        "Protocol": "HTTPS",
+        "Port": "443"
       }
     }
   }

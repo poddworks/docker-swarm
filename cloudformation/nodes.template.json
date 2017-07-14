@@ -82,14 +82,6 @@
             "KeyName",
             "AmiId"
           ]
-        },
-        {
-          "Label": {
-            "default": "LoadBalancer Properties"
-          },
-          "Parameters": [
-            "ServerCertificate"
-          ]
         }
       ],
       "ParameterLabels": {
@@ -145,10 +137,6 @@
       "ConstraintDescription": "Must be the name of an existing EC2 KeyPair",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type": "AWS::EC2::KeyPair::KeyName"
-    },
-    "ServerCertificate": {
-      "ConstraintDescription": "Must be a valid Certificate Arn from ACM",
-      "Type": "String"
     }
   },
   "Outputs": {
@@ -158,31 +146,7 @@
         "Ref": "Manager01"
       },
       "Export": {
-        "Name": "Manager01Name"
-      }
-    },
-    "Manager01PublicIp": {
-      "Description": "Docker Swarm Manager Node 1 Public IP",
-      "Value": {
-        "Fn::GetAtt": [
-          "Manager01",
-          "PublicIp"
-        ]
-      },
-      "Export": {
-        "Name": "Manager01PublicIp"
-      }
-    },
-    "Manager01PrivateIp": {
-      "Description": "Docker Swarm Manager Node 1 Private IP",
-      "Value": {
-        "Fn::GetAtt": [
-          "Manager01",
-          "PrivateIp"
-        ]
-      },
-      "Export": {
-        "Name": "Manager01PrivateIp"
+        "Name": { "Fn::Sub": "${AWS::StackName}::Manager01" }
       }
     },
     "Manager02": {
@@ -191,31 +155,7 @@
         "Ref": "Manager02"
       },
       "Export": {
-        "Name": "Manager02Name"
-      }
-    },
-    "Manager02PublicIp": {
-      "Description": "Docker Swarm Manager Node 2 Public IP",
-      "Value": {
-        "Fn::GetAtt": [
-          "Manager02",
-          "PublicIp"
-        ]
-      },
-      "Export": {
-        "Name": "Manager02PublicIp"
-      }
-    },
-    "Manager02PrivateIp": {
-      "Description": "Docker Swarm Manager Node 2 Private IP",
-      "Value": {
-        "Fn::GetAtt": [
-          "Manager02",
-          "PrivateIp"
-        ]
-      },
-      "Export": {
-        "Name": "Manager02PrivateIp"
+        "Name": { "Fn::Sub": "${AWS::StackName}::Manager02" }
       }
     },
     "Manager03": {
@@ -224,31 +164,7 @@
         "Ref": "Manager03"
       },
       "Export": {
-        "Name": "Manager03Name"
-      }
-    },
-    "Manager03PublicIp": {
-      "Description": "Docker Swarm Manager Node 3 Public IP",
-      "Value": {
-        "Fn::GetAtt": [
-          "Manager03",
-          "PublicIp"
-        ]
-      },
-      "Export": {
-        "Name": "Manager03PublicIp"
-      }
-    },
-    "Manager03PrivateIp": {
-      "Description": "Docker Swarm Manager Node 3 Private IP",
-      "Value": {
-        "Fn::GetAtt": [
-          "Manager03",
-          "PrivateIp"
-        ]
-      },
-      "Export": {
-        "Name": "Manager03PrivateIp"
+        "Name": { "Fn::Sub": "${AWS::StackName}::Manager03" }
       }
     }
   },
@@ -380,7 +296,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "Manager-1"
+                  "Manager01"
                 ]
               ]
             }
@@ -464,7 +380,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "Manager-2"
+                  "Manager02"
                 ]
               ]
             }
@@ -548,7 +464,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "Manager-3"
+                  "Manager03“
                 ]
               ]
             }
@@ -574,88 +490,6 @@
             }
           }
         ]
-      }
-    },
-    "SwarmTargetGroup": {
-      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
-      "Properties" : {
-        "HealthCheckIntervalSeconds": 10,
-        "HealthCheckProtocol": "HTTP",
-        "HealthCheckTimeoutSeconds": 3,
-        "HealthyThresholdCount": 4,
-        "UnhealthyThresholdCount": 3,
-        "Protocol": "HTTP",
-        "Port": 8080,
-        "Targets": [
-          {
-            "Id": { "Ref" : "Manager01" },
-            "Port": 8080
-          },
-          {
-            "Id": { "Ref" : "Manager02" },
-            "Port": 8080
-          },
-          {
-            "Id": { "Ref" : "Manager03" },
-            "Port": 8080
-          }
-        ],
-        "VpcId": {
-          "Fn::ImportValue" : "Vpc"
-        },
-        "Tags" : [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Join": [
-                "-",
-                [
-                  {
-                    "Ref": "AWS::StackName"
-                  },
-                  "SwarmTargetGroup"
-                ]
-              ]
-            }
-          }
-        ]
-      }
-    },
-    "SwarmHTTPListener" : {
-      "Type": "AWS::ElasticLoadBalancingV2::Listener",
-      "Properties": {
-        "DefaultActions": [
-          {
-            "TargetGroupArn": { "Ref": "SwarmTargetGroup" },
-            "Type": "forward"
-          }
-        ],
-        "LoadBalancerArn": {
-          "Fn::ImportValue" : "LoadBalancer"
-        },
-        "Protocol": "HTTP",
-        "Port": "80"
-      }
-    },
-    "SwarmHTTPSListener" : {
-      "Type": "AWS::ElasticLoadBalancingV2::Listener",
-      "Properties": {
-        "DefaultActions": [
-          {
-            "TargetGroupArn": { "Ref": "SwarmTargetGroup" },
-            "Type": "forward"
-          }
-        ],
-        "LoadBalancerArn": {
-          "Fn::ImportValue" : "LoadBalancer"
-        },
-        "Certificates": [
-          {
-            "CertificateArn": { "Ref": "ServerCertificate" }
-          }
-        ],
-        "Protocol": "HTTPS",
-        "Port": "443"
       }
     }
   }

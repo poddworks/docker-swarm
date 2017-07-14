@@ -632,7 +632,7 @@
             },
             "FromPort": "0",
             "IpProtocol": "-1",
-            "ToPort": "65535"
+            "ToPort": "65534"
           }
         ],
         "VpcId": {
@@ -692,7 +692,7 @@
             },
             "FromPort": "0",
             "IpProtocol": "-1",
-            "ToPort": "65535"
+            "ToPort": "65534"
           }
         ],
         "VpcId": {
