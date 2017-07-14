@@ -37,18 +37,6 @@
     }
   },
   "Outputs": {
-    "Function": {
-      "Description": "Function Group for worker",
-      "Value": {
-        "Fn::GetAtt": [
-          "Function",
-          "Arn"
-        ]
-      },
-      "Export": {
-        "Name": "Function"
-      }
-    },
     "FunctionRole": {
       "Description": "Function Group Role for worker",
       "Value": {
@@ -58,7 +46,7 @@
         ]
       },
       "Export": {
-        "Name": "FunctionRole"
+        "Name": "FunctionRoleNonVpc"
       }
     }
   },
@@ -111,56 +99,6 @@
             }
           }
         ]
-      }
-    },
-    "Function": {
-      "Type" : "AWS::Lambda::Function",
-      "DependsOn": "FunctionRole",
-      "Properties" : {
-        "Description": {
-          "Ref": "WorkerName"
-        },
-        "FunctionName": {
-          "Fn::Join": [
-            "-",
-            [
-              { "Ref": "AppId" },
-              { "Ref": "WorkerName" }
-            ]
-          ]
-        },
-        "Runtime": "nodejs4.3",
-        "Code": {
-          "ZipFile": {
-            "Fn::Join": [
-              "",
-              [
-                "exports.handler = function handler(event, context, callback) {",
-                "  callback(null, \"done\");",
-                "}"
-              ]
-            ]
-          }
-        },
-        "Handler": "index.handler",
-        "Role": {
-          "Fn::GetAtt": [
-            "FunctionRole",
-            "Arn"
-          ]
-        },
-        "MemorySize": 128,
-        "Timeout": 3,
-        "Environment": {
-          "Variables": {
-            "APP_ID": {
-              "Ref": "AppId"
-            },
-            "SERVER_URL": {
-              "Ref": "ServerUrl"
-            }
-          }
-        }
       }
     }
   }
