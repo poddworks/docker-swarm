@@ -299,6 +299,15 @@
         "Name": "DbAdminAccess"
       }
     },
+    "OpsAccess": {
+      "Description": "Security Group for Ops Admin",
+      "Value": {
+        "Ref": "OpsAccess"
+      },
+      "Export": {
+        "Name": "OpsAccess"
+      }
+    },
     "PublicAccess": {
       "Description": "SecurityGroup for Public Access",
       "Value": {
@@ -723,22 +732,6 @@
         "GroupDescription": "Manager SecurityGroup",
         "SecurityGroupIngress": [
           {
-            "CidrIp": {
-              "Ref": "RemoteSSH"
-            },
-            "FromPort": "22",
-            "IpProtocol": "tcp",
-            "ToPort": "22"
-          },
-          {
-            "CidrIp": {
-              "Ref": "RemoteSSH"
-            },
-            "FromPort": "2376",
-            "IpProtocol": "tcp",
-            "ToPort": "2376"
-          },
-          {
             "FromPort": "2377",
             "IpProtocol": "tcp",
             "SourceSecurityGroupId": {
@@ -833,6 +826,50 @@
             "FromPort": "27017",
             "IpProtocol": "tcp",
             "ToPort": "27017"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "AdminAccess"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "OpsAccess": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "Vpc",
+      "Properties": {
+        "GroupDescription": "Ops Admin Access",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": {
+              "Ref": "RemoteSSH"
+            },
+            "FromPort": "22",
+            "IpProtocol": "tcp",
+            "ToPort": "22"
+          },
+          {
+            "CidrIp": {
+              "Ref": "RemoteSSH"
+            },
+            "FromPort": "2376",
+            "IpProtocol": "tcp",
+            "ToPort": "2376"
           }
         ],
         "VpcId": {
