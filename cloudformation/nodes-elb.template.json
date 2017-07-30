@@ -1,0 +1,310 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Target Groups and Listener Association for Docker Swarm Cluster",
+  "Parameters": {
+    "ReferenceStackName": {
+      "Description": "StackName for provisioned EC2 nodes",
+      "Type": "String"
+    },
+    "StageName": {
+      "AllowedValues": [
+        "stage",
+        "prod"
+      ],
+      "ConstraintDescription": "Must be either stage or prod",
+      "Default": "stage",
+      "Description": "Stage name for current route association",
+      "Type": "String"
+    },
+    "ApiServiceName": {
+      "ConstraintDescription": "Must be a valid host name",
+      "Description": "Host name for Service API",
+      "Type": "String"
+    },
+    "ChatServiceName": {
+      "ConstraintDescription": "Must be a valid host name",
+      "Description": "Host name for Service Chat",
+      "Type": "String"
+    },
+    "ConsoleServiceName": {
+      "ConstraintDescription": "Must be a valid host name",
+      "Description": "Host name for Service Console",
+      "Type": "String"
+    }
+  },
+  "Outputs": {
+    "Api": {
+      "Description": "Target group for API service",
+      "Value": {
+        "Ref": "Api"
+      },
+      "Export": {
+        "Name": { "Fn::Sub": "${StageName}-Api" }
+      }
+    },
+    "Chat": {
+      "Description": "Target group for Chat service",
+      "Value": {
+        "Ref": "Chat"
+      },
+      "Export": {
+        "Name": { "Fn::Sub": "${StageName}-Chat" }
+      }
+    },
+    "Console": {
+      "Description": "Target group for Console service",
+      "Value": {
+        "Ref": "Console"
+      },
+      "Export": {
+        "Name": { "Fn::Sub": "${StageName}-Console" }
+      }
+    }
+  },
+  "Mappings": {
+    "Instances": {
+      "Manager": {
+        "Node": [
+          {
+            "Id": {
+              "Fn::ImportValue": {
+                "Fn:Sub": "${ReferenceStackName}::Manager01"
+              }
+            }
+          },
+          {
+            "Id": {
+              "Fn::ImportValue": {
+                "Fn:Sub": "${ReferenceStackName}::Manager02"
+              }
+            }
+          },
+          {
+            "Id": {
+              "Fn::ImportValue": {
+                "Fn:Sub": "${ReferenceStackName}::Manager03"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "Port": {
+      "prod-Api": {
+        "Traffic": 8080,
+        "HealthCheck": 8080,
+        "HealthCheckPath": "/_ah/health"
+      },
+      "prod-Chat": {
+        "Traffic": 3000,
+        "HealthCheck": 8080,
+        "HealthCheckPath": "/_ah/health"
+      },
+      "prod-Console": {
+        "Traffic": 8081,
+        "HealthCheck": 8080,
+        "HealthCheckPath": "/_ah/health"
+      },
+      "stage-Api": {
+        "Traffic": 18080,
+        "HealthCheck": 18080,
+        "HealthCheckPath": "/_ah/health"
+      },
+      "stage-Chat": {
+        "Traffic": 13000,
+        "HealthCheck": 18080,
+        "HealthCheckPath": "/_ah/health"
+      },
+      "stage-Console": {
+        "Traffic": 18081,
+        "HealthCheck": 18080,
+        "HealthCheckPath": "/_ah/health"
+      }
+    }
+  },
+  "Resources": {
+    "Api": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckPort": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Api" }, "HealthCheck" ]
+        },
+        "HealthCheckPath": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Api" }, "HealthCheckPath" ]
+        },
+        "HealthCheckTimeoutSeconds": 3,
+        "HealthyThresholdCount": 4,
+        "UnhealthyThresholdCount": 3,
+        "Protocol": "HTTP",
+        "Port": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Api" }, "Traffic" ]
+        },
+        "Targets": {
+          "Fn::FindInMap": [ "Instances", "Manager", "Node" ]
+        },
+        "VpcId": {
+          "Fn::ImportValue" : "Vpc"
+        },
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  {
+                    "Fn::Sub": "${StageName}-Api"
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ApiRouteRule": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Actions": [{
+          "Type": "forward",
+          "TargetGroupArn": { "Ref": "Api" }
+        }],
+        "Conditions": [{
+          "Field": "host",
+          "Values": [ { "Ref": "ApiServiceName" } ]
+        }],
+        "ListenerArn": {
+          "Fn::ImportValue": "HTTPSListener"
+        },
+        "Priority": 1
+      }
+    },
+    "Chat": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckPort": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Chat" }, "HealthCheck" ]
+        },
+        "HealthCheckPath": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Chat" }, "HealthCheckPath" ]
+        },
+        "HealthCheckTimeoutSeconds": 3,
+        "HealthyThresholdCount": 4,
+        "UnhealthyThresholdCount": 3,
+        "Protocol": "HTTP",
+        "Port": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Chat" }, "Traffic" ]
+        },
+        "Targets": {
+          "Fn::FindInMap": [ "Instances", "Manager", "Node" ]
+        },
+        "VpcId": {
+          "Fn::ImportValue" : "Vpc"
+        },
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  {
+                    "Fn::Sub": "${StageName}-Chat"
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ChatRouteRule": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Actions": [{
+          "Type": "forward",
+          "TargetGroupArn": { "Ref": "Chat" }
+        }],
+        "Conditions": [{
+          "Field": "host",
+          "Values": [ { "Ref": "ChatServiceName" } ]
+        }],
+        "ListenerArn": {
+          "Fn::ImportValue": "HTTPSListener"
+        },
+        "Priority": 1
+      }
+    },
+    "Console": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckPort": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Console" }, "HealthCheck" ]
+        },
+        "HealthCheckPath": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Console" }, "HealthCheckPath" ]
+        },
+        "HealthCheckTimeoutSeconds": 3,
+        "HealthyThresholdCount": 4,
+        "UnhealthyThresholdCount": 3,
+        "Protocol": "HTTP",
+        "Port": {
+          "Fn::FindInMap": [ "Port", { "Fn::Sub": "${StageName}-Console" }, "Traffic" ]
+        },
+        "Targets": {
+          "Fn::FindInMap": [ "Instances", "Manager", "Node" ]
+        },
+        "VpcId": {
+          "Fn::ImportValue" : "Vpc"
+        },
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  {
+                    "Fn::Sub": "${StageName}-Console"
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ConsoleRouteRule": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Actions": [{
+          "Type": "forward",
+          "TargetGroupArn": { "Ref": "Console" }
+        }],
+        "Conditions": [{
+          "Field": "host",
+          "Values": [ { "Ref": "ConsoleServiceName" } ]
+        }],
+        "ListenerArn": {
+          "Fn::ImportValue": "HTTPSListener"
+        },
+        "Priority": 1
+      }
+    }
+  }
+}
