@@ -20,9 +20,7 @@
           },
           "Parameters": [
             "WorkerName",
-            "IsWorkerExt",
-            "AppId",
-            "ServerUrl"
+            "IsWorkerExt"
           ]
         }
       ],
@@ -45,14 +43,6 @@
       ],
       "Default": "yes",
       "Description": "Indicate whether this is an external worker.",
-      "Type": "String"
-    },
-    "AppId": {
-      "Description": "AppId for the API.",
-      "Type": "String"
-    },
-    "ServerUrl": {
-      "Description": "Access Endpoint for the API.",
       "Type": "String"
     }
   },
