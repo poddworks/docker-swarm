@@ -180,52 +180,10 @@
       "Export": {
         "Name": "PrivSubnetAz3"
       }
-    },
-    "WorkerNode": {
-      "Description": "Security Group for Worker",
-      "Value": {
-        "Ref": "WorkerNode"
-      },
-      "Export": {
-        "Name": "WorkerNode"
-      }
-    },
-    "WorkerExtNode": {
-      "Description": "Security Group for External Worker",
-      "Value": {
-        "Ref": "WorkerExtNode"
-      },
-      "Export": {
-        "Name": "WorkerExtNode"
-      }
     }
   },
   "Resources": {
-    "NatGatewayIP" : {
-      "Type" : "AWS::EC2::EIP",
-      "Properties" : {
-        "Domain" : "vpc"
-      }
-    },
-    "NatGateway": {
-      "Type" : "AWS::EC2::NatGateway",
-      "DependsOn": [
-        "NatGatewayIP",
-        "PubSubnetAz1"
-      ],
-      "Properties" : {
-        "AllocationId" : {
-          "Fn::GetAtt" : [
-            "NatGatewayIP",
-            "AllocationId"
-          ]
-        },
-        "SubnetId" : {
-          "Ref": "PubSubnetAz1"
-        }
-      }
-    },
-    "RouteViaNat": {
+    "RouteInternal": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "Tags": [
@@ -238,7 +196,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "NAT"
+                  "Internal"
                 ]
               ]
             }
@@ -249,17 +207,15 @@
         }
       }
     },
-    "PrivateRouteViaNat": {
+    "PrivateRouteInternal": {
       "Type": "AWS::EC2::Route",
       "DependsOn": [
-        "NatGateway",
-        "RouteViaNat"
+        "RouteInternal"
       ],
       "Properties": {
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "NatGatewayId": {
-          "Ref": "NatGateway"
-        },
+        "DestinationCidrBlock": {
+		  "Fn::ImportValue": "VpcCidr"
+		},
         "RouteTableId": {
           "Ref": "RouteViaNat"
         }
@@ -418,12 +374,11 @@
     "PrivSubnet1RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "DependsOn": [
-        "PrivSubnetAz1",
-        "RouteViaNat"
+        "RouteInternal"
       ],
       "Properties": {
         "RouteTableId": {
-          "Ref": "RouteViaNat"
+          "Ref": "RouteInternal"
         },
         "SubnetId": {
           "Ref": "PrivSubnetAz1"
@@ -433,12 +388,11 @@
     "PrivSubnet2RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "DependsOn": [
-        "PrivSubnetAz2",
-        "RouteViaNat"
+        "RouteInternal"
       ],
       "Properties": {
         "RouteTableId": {
-          "Ref": "RouteViaNat"
+          "Ref": "RouteInternal"
         },
         "SubnetId": {
           "Ref": "PrivSubnetAz2"
@@ -448,130 +402,29 @@
     "PrivSubnet3RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "DependsOn": [
-        "PrivSubnetAz3",
-        "RouteViaNat"
+        "RouteInternal"
       ],
       "Properties": {
         "RouteTableId": {
-          "Ref": "RouteViaNat"
+          "Ref": "RouteInternal"
         },
         "SubnetId": {
           "Ref": "PrivSubnetAz3"
         }
       }
     },
-    "WorkerNode": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Worker Node Access",
-        "SecurityGroupEgress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": "80",
-            "IpProtocol": "tcp",
-            "ToPort": "80"
-          },
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": "443",
-            "IpProtocol": "tcp",
-            "ToPort": "443"
-          },
-          {
-            "CidrIp": {
-              "Fn::FindInMap": [
-                "VpcCidrs",
-                "vpc",
-                "cidr"
-              ]
-            },
-            "FromPort": "8080",
-            "IpProtocol": "tcp",
-            "ToPort": "8080"
-          },
-          {
-            "CidrIp": {
-              "Fn::FindInMap": [
-                "VpcCidrs",
-                "vpc",
-                "cidr"
-              ]
-            },
-            "FromPort": "8085",
-            "IpProtocol": "tcp",
-            "ToPort": "8085"
-          }
+    "S3Endpoint": {
+	  "Type" : "AWS::EC2::VPCEndpoint",
+  	  "Properties" : {
+        "RouteTableIds" : [
+          { "Ref" : "RouteInternal" }
         ],
-        "VpcId": {
+        "ServiceName" : {
+ 		  "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ]
+		},
+        "VpcId" : {
           "Fn::ImportValue" : "Vpc"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Join": [
-                "-",
-                [
-                  {
-                    "Ref": "AWS::StackName"
-                  },
-                  "WorkerNode"
-                ]
-              ]
-            }
-          }
-        ]
-      }
-    },
-    "WorkerExtNode": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "External Worker Node Access",
-        "SecurityGroupEgress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": "80",
-            "IpProtocol": "tcp",
-            "ToPort": "80"
-          },
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": "443",
-            "IpProtocol": "tcp",
-            "ToPort": "443"
-          },
-          {
-            "CidrIp": {
-              "Fn::FindInMap": [
-                "VpcCidrs",
-                "vpc",
-                "cidr"
-              ]
-            },
-            "FromPort": "8085",
-            "IpProtocol": "tcp",
-            "ToPort": "8085"
-          }
-        ],
-        "VpcId": {
-          "Fn::ImportValue" : "Vpc"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Join": [
-                "-",
-                [
-                  {
-                    "Ref": "AWS::StackName"
-                  },
-                  "WorkerExtNode"
-                ]
-              ]
-            }
-          }
-        ]
+		}
       }
     }
   }

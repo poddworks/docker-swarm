@@ -1,0 +1,125 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Vpc private NATGW for Docker Swarm Cluster",
+  "Resources": {
+    "NatGatewayIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+    "NatGateway": {
+      "Type" : "AWS::EC2::NatGateway",
+      "DependsOn": [
+        "NatGatewayIP"
+      ],
+      "Properties" : {
+        "AllocationId" : {
+          "Fn::GetAtt" : [
+            "NatGatewayIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId" : {
+          "Fn::ImportValue" : "PubSubnetAz1"
+        }
+      }
+    },
+    "RouteViaNat": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "NAT"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Fn::ImportValue" : "Vpc"
+        }
+      }
+    },
+    "PrivateRouteViaNat": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "NatGateway",
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NatGateway"
+        },
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        }
+      }
+    },
+    "PrivSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        },
+        "SubnetId": {
+          "Fn::ImportValue" : "PrivSubnetAz1"
+        }
+      }
+    },
+    "PrivSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        },
+        "SubnetId": {
+          "Fn::ImportValue" : "PrivSubnetAz2"
+        }
+      }
+    },
+    "PrivSubnet3RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "RouteViaNat"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteViaNat"
+        },
+        "SubnetId": {
+          "Fn::ImportValue" : "PrivSubnetAz3"
+        }
+      }
+    },
+    "S3Endpoint": {
+	  "Type" : "AWS::EC2::VPCEndpoint",
+  	  "Properties" : {
+        "RouteTableIds" : [
+          { "Ref" : "RouteViaNat" }
+        ],
+        "ServiceName" : {
+ 		  "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ]
+		},
+        "VpcId" : {
+          "Fn::ImportValue" : "Vpc"
+		}
+      }
+    }
+  }
+}
