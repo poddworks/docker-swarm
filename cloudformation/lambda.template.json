@@ -9,9 +9,7 @@
             "default": "Application Properties"
           },
           "Parameters": [
-            "WorkerName",
-            "AppId",
-            "ServerUrl"
+            "WorkerName"
           ]
         }
       ],
@@ -25,14 +23,6 @@
   "Parameters": {
     "WorkerName": {
       "Description": "Name for the Lambda Worker.",
-      "Type": "String"
-    },
-    "AppId": {
-      "Description": "AppId for the API.",
-      "Type": "String"
-    },
-    "ServerUrl": {
-      "Description": "Access Endpoint for the API.",
       "Type": "String"
     }
   },
