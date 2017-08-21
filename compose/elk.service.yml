@@ -1,0 +1,71 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.5.0
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.type == elasticsearch
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        window: 120s
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: ${aws_log_group}
+        tag: "{{"{{"}} .Name {{"}}"}}"
+    environment:
+      - http.host=0.0.0.0
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - default
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.5.0
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.type == elasticsearch
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        window: 120s
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: ${aws_log_group}
+        tag: "{{"{{"}} .Name {{"}}"}}"
+    environment:
+      SERVER_NAME: ${kibana_hostname}
+      ELASTICSEARCH_PASSWORD: ${auth}
+      ELASTICSEARCH_URL: ${elasticsearch_url_port}
+    ports:
+      - "5601:5601"
+    networks:
+      - default
+
+volumes:
+  esdata:
+
+networks:
+  default:
+    external:
+      name: ${network}
