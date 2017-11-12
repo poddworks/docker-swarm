@@ -11,6 +11,8 @@ provision:
   action:
     - script: 03-configure-cloudwatch-instance-metric
       sudo: true
+    - script: 04-configure-docker-stats-cloudwatch-metric
+      sudo: true
     - cmd: 'rm -f /var/tmp/aws-mon/instance-id'
       sudo: true
 

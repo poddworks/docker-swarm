@@ -13,7 +13,7 @@ rm CloudWatchMonitoringScripts-1.2.1.zip
 popd
 
 pushd /cloudwatch-cron
-echo "*/5 * * * * /cloudwatch/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --mem-avail --disk-space-used --disk-space-avail --disk-path=/ --disk-path=/data --from-cron" >./put-metric-cronjob
+echo "*/5 * * * * /cloudwatch/aws-scripts-mon/mon-put-instance-data.pl --mem-util --mem-used --mem-avail --disk-space-used --disk-space-avail --disk-path=/ --disk-path=/data --from-cron" >>./put-metric-cronjob
 popd
 
 # Store and Enable crontab file

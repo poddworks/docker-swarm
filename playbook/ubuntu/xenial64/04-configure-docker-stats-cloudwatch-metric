@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+
+apt-get update
+apt-get install -y python-pip
+
+pip install awscli
+
+mkdir -p /cloudwatch /cloudwatch-cron
+
+EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
+EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed -e 's:\([0-9][0-9]*\)[a-z]*\$:\\1:'`"
+
+pushd /cloudwatch
+cat <<EOF >docker-stats.sh
+#!/bin/bash
+set -e
+
+/usr/bin/docker stats --no-stream --format '{{ .Name }} {{ .CPUPerc }} {{ .MemUsage }} {{ .PIDs }}' | while read name cpuperc memused junk memlimit pids; do
+  Service=\${name%.*}
+  CpuPerc=\${cpuperc%%%}
+  MemUsed=\`echo ${memused} | numfmt --from iec-i --suffix B\`
+  Pids=\${pids}
+  timestamp=\$(date -Is)
+  /usr/local/bin/aws --region ${EC2_REGION} cloudwatch put-metric-data --timestamp \${timestamp} --namespace DockerSwarm --dimensions Service=\${Service} --metric-name CpuPerc --value \${CpuPerc} --unit Percent
+  /usr/local/bin/aws --region ${EC2_REGION} cloudwatch put-metric-data --timestamp \${timestamp} --namespace DockerSwarm --dimensions Service=\${Service} --metric-name MemUsed --value \${MemUsed%%B} --unit Bytes
+  /usr/local/bin/aws --region ${EC2_REGION} cloudwatch put-metric-data --timestamp \${timestamp} --namespace DockerSwarm --dimensions Service=\${Service} --metric-name PIDs --value \${Pids} --unit Count
+done
+EOF
+chmod +x docker-stats.sh
+popd
+
+pushd /cloudwatch-cron
+echo "*/5 * * * * /cloudwatch/docker-stats.sh" >>./put-metric-cronjob
+popd
+
+# Store and Enable crontab file
+crontab /cloudwatch-cron/put-metric-cronjob
