@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+pushd /cloudwatch-cron
+echo "0 */1 * * * /usr/bin/docker system prune --all" >>./volume-upkeep
+popd
+
+# Store and Enable crontab file
+crontab /cloudwatch-cron/put-metric-cronjob

@@ -13,6 +13,8 @@ provision:
       sudo: true
     - script: 04-configure-docker-stats-cloudwatch-metric
       sudo: true
+    - script: 04-configure-docker-system-prune
+      sudo: true
     - cmd: 'rm -f /var/tmp/aws-mon/instance-id'
       sudo: true
 
